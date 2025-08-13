@@ -1,4 +1,24 @@
-# <img src="https://img.shields.io/badge/M-A-00FF00?style=for-the-ba<table>
+# API & MCP Server Builds
+
+<div align="center">
+  <img src="https://img.shields.io/badge/-API%20%26%20MCP%20SERVERS-00FF00?style=for-the-badge&labelColor=000000" alt="API & MCP Servers" />
+  <br/>
+  <img src="https://img.shields.io/badge/version-2.0-brightgreen" alt="Version" /> 
+  <img src="https://img.shields.io/badge/TypeScript-5.8-blue" alt="TypeScript" /> 
+  <img src="https://img.shields.io/badge/NestJS-11.0-red" alt="NestJS" />
+  <br/><br/>
+  
+  <h2>
+    <img src="https://img.shields.io/badge/UNIFIED-API%20COLLECTION-00FF00?style=for-the-badge&labelColor=000000" alt="Unified API Collection" />
+  </h2>
+  
+  <p align="center">
+    <i>A collection of API servers and MCP (Model Context Protocol) servers for various projects and integrations.</i>
+  </p>
+  
+  <br/>
+  <a href="#features">Features</a> •
+  <a href="#quickstart">Quickstart</a> •tps://img.shields.io/badge/M-A-00FF00?style=for-the-ba<table>
 <tr>
   <td width="50%" align="center">
     <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-AAVE-B6509E?style=for-the-badge" /><br/>
@@ -14,7 +34,7 @@
 </table>00" /> <img src="https://img.shields.io/badge/T-R-00FF00?style=for-the-badge&labelColor=000000" /> <img src="https://img.shields.io/badge/I-X-00FF00?style=for-the-badge&labelColor=000000" />
 
 <div align="center">
-  <img src="https://img.shields.io/badge/-DEFI%20API%20V2.0-00FF00?style=for-the-badge&labelColor=000000" alt="Matrix API" />
+  <img src="https://img.shields.io/badge/-API%20%26%20MCP%20SERVERS-00FF00?style=for-the-badge&labelColor=000000" alt="API & MCP Servers" />
   <br/>
   <img src="https://img.shields.io/badge/version-2.0-brightgreen" alt="Version" /> 
   <img src="https://img.shields.io/badge/TypeScript-5.8-blue" alt="TypeScript" /> 
@@ -57,18 +77,16 @@
 
 <br/>
 
-> <img src="https://img.shields.io/badge/💊%20THE%20RED%20PILL-ENTER%20THE%20MATRIX-FF0000?style=for-the-badge&labelColor=000000" alt="The Red Pill" />
-> 
-> A powerful, unified REST API for interacting with **Aave** and **Morpho** protocols across multiple blockchains. Built with TypeScript, NestJS, and Viem, the Matrix API provides a single interface to access the vast DeFi multiverse.
+> A collection of API servers and MCP (Model Context Protocol) servers built with TypeScript, NestJS, and modern web technologies. This repository contains various API implementations for different projects and integrations.
 
 <br/>
 
 <div align="center">
   <table width="100%">
     <tr>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%8C%8A%20MULTI--PROTOCOL-000000?style=for-the-badge" alt="Multi-Protocol" /></td>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%8C%90%20MULTI--CHAIN-000000?style=for-the-badge" alt="Multi-Chain" /></td>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%9B%A1%EF%B8%8F%20ULTIMATE%20SECURITY-000000?style=for-the-badge" alt="Security" /></td>
+      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%9A%80%20API%20SERVERS-000000?style=for-the-badge" alt="API Servers" /></td>
+      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%A4%96%20MCP%20INTEGRATION-000000?style=for-the-badge" alt="MCP Integration" /></td>
+      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%9B%A1%EF%B8%8F%20ENTERPRISE%20READY-000000?style=for-the-badge" alt="Enterprise Ready" /></td>
     </tr>
   </table>
 </div>
@@ -77,54 +95,60 @@
 
 ## <img src="https://img.shields.io/badge/✨-FEATURES-00FF00?style=for-the-badge&labelColor=000000" alt="Features" />
 
-### 🧠 Multi-Protocol Integration
+### 🚀 Core Technologies
 
 <table>
 <tr>
-  <td width="50%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-AAVE-B6509E?style=for-the-badge" /><br/>
-    <b>Liquidity Markets</b><br/>
-    <small>Premier lending platform</small>
+  <td width="33%" align="center">
+    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-NESTJS-E0234E?style=for-the-badge" /><br/>
+    <b>NestJS Framework</b><br/>
+    <small>Scalable Node.js framework</small>
   </td>
-  <td width="50%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%9F%A3-MORPHO-5A67D8?style=for-the-badge" /><br/>
-    <b>Optimized Lending</b><br/>
-    <small>Efficient peer-to-peer matching</small>
+  <td width="33%" align="center">
+    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B7-TYPESCRIPT-3178C6?style=for-the-badge" /><br/>
+    <b>TypeScript</b><br/>
+    <small>Type-safe development</small>
+  </td>
+  <td width="33%" align="center">
+    <img width="80" src="https://img.shields.io/badge/%F0%9F%A4%96-MCP-5A67D8?style=for-the-badge" /><br/>
+    <b>MCP Protocol</b><br/>
+    <small>Model Context Protocol integration</small>
   </td>
 </tr>
 </table>
 
-### 🌐 Multi-Chain Support
-
-<div align="center">
-  <img src="https://img.shields.io/badge/Ethereum-3C3C3D?style=flat&logo=ethereum&logoColor=white" alt="Ethereum" />
-  <img src="https://img.shields.io/badge/Mode-555555?style=flat" alt="Mode" />
-  <img src="https://img.shields.io/badge/Base-0052FF?style=flat" alt="Base" />
-  <img src="https://img.shields.io/badge/Optimism-FF0420?style=flat" alt="Optimism" />
-  <img src="https://img.shields.io/badge/Arbitrum-12AAFF?style=flat" alt="Arbitrum" />
-  <img src="https://img.shields.io/badge/Fraxtal-090580?style=flat" alt="Fraxtal" />
-  <img src="https://img.shields.io/badge/Bob-9A40FF?style=flat" alt="Bob" />
-  <img src="https://img.shields.io/badge/Lisk-00897B?style=flat" alt="Lisk" />
-  <img src="https://img.shields.io/badge/Ink-2B65B7?style=flat" alt="Ink" />
-  <img src="https://img.shields.io/badge/SuperSeed-FFCC00?style=flat&logoColor=black" alt="SuperSeed" />
-  <img src="https://img.shields.io/badge/WorldChain-0057FF?style=flat" alt="WorldChain" />
-  <img src="https://img.shields.io/badge/Swell-14B8A6?style=flat" alt="Swell" />
-  <img src="https://img.shields.io/badge/Sonic-FF5A1F?style=flat" alt="Sonic" />
-  <img src="https://img.shields.io/badge/Soneium-7C3AED?style=flat" alt="Soneium" />
-</div>
-
-### 🛠️ Universal Operations
+### 🛠️ Built-in Features
 
 <div align="center">
   <table width="100%">
     <tr>
-      <td align="center" width="5%"><img src="https://img.shields.io/badge/📊-Market-00FF00" /></td>
-      <td><b>Market Information</b> - Comprehensive market data across all protocols</td>
+      <td align="center" width="5%"><img src="https://img.shields.io/badge/🔐-Security-00FF00" /></td>
+      <td><b>API Key Authentication</b> - Secure access control for all endpoints</td>
     </tr>
     <tr>
-      <td align="center"><img src="https://img.shields.io/badge/💼-Position-00FF00" /></td>
-      <td><b>Position Management</b> - Track positions across multiple protocols</td>
+      <td align="center"><img src="https://img.shields.io/badge/📊-Swagger-00FF00" /></td>
+      <td><b>API Documentation</b> - Interactive Swagger documentation</td>
     </tr>
+    <tr>
+      <td align="center"><img src="https://img.shields.io/badge/🐳-Docker-00FF00" /></td>
+      <td><b>Containerization</b> - Docker support for easy deployment</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="https://img.shields.io/badge/🔄-Caching-00FF00" /></td>
+      <td><b>Response Caching</b> - Optimized performance with intelligent caching</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="https://img.shields.io/badge/�-Logging-00FF00" /></td>
+      <td><b>Comprehensive Logging</b> - Detailed request/response logging</td>
+    </tr>
+    <tr>
+      <td align="center"><img src="https://img.shields.io/badge/🧪-Testing-00FF00" /></td>
+      <td><b>E2E Testing</b> - Full test coverage with Jest</td>
+    </tr>
+  </table>
+</div>
+
+### 🌐 Multi-Protocol Support
     <tr>
       <td align="center"><img src="https://img.shields.io/badge/💰-Supply-00FF00" /></td>
       <td><b>Supply Operations</b> - Supply assets to any supported pool</td>
@@ -148,7 +172,7 @@
   </table>
 </div>
 
-### 🔒 Matrix-Grade Security
+### 🔒 Enterprise-Grade Security
 
 > <img src="https://img.shields.io/badge/SENTINEL-PROTECTION-00FF00?style=for-the-badge&labelColor=000000" alt="Sentinel Protection" />
 > 

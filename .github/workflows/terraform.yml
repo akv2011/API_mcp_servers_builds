@@ -60,14 +60,14 @@ jobs:
             --build-arg UPLINK_SUPABASE_URL=${{ secrets.UPLINK_SUPABASE_URL }} \
             --build-arg UPLINK_SUPABASE_KEY=${{ secrets.UPLINK_SUPABASE_KEY }} \
             --build-arg UPLINK_SUPABASE_SERVICE_ROLE_KEY=${{ secrets.UPLINK_SUPABASE_SERVICE_ROLE_KEY }} \
-            -t api/matrix .
+            -t api/api-mcp-builds .
           docker images
 
       - name: Push Image to ECR
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 058264122535.dkr.ecr.us-east-1.amazonaws.com
-          docker tag api/matrix:latest 058264122535.dkr.ecr.us-east-1.amazonaws.com/api/matrix:latest
-          docker push 058264122535.dkr.ecr.us-east-1.amazonaws.com/api/matrix:latest
+          docker tag api/api-mcp-builds:latest 058264122535.dkr.ecr.us-east-1.amazonaws.com/api/api-mcp-builds:latest
+          docker push 058264122535.dkr.ecr.us-east-1.amazonaws.com/api/api-mcp-builds:latest
 
       - name: Update Infra with latest deployment
         id: update_infra

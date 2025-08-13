@@ -1,7 +1,7 @@
 {
-  "name": "matrix-api",
+  "name": "api-mcp-servers-builds",
   "version": "0.1.0",
-  "description": "NestJS-based API server for interacting with Matrix",
+  "description": "Collection of API servers and MCP server builds for various projects",
   "author": "",
   "private": true,
   "license": "MIT",
