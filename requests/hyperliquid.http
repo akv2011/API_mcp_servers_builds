@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrix.ninja
+
+GET {{baseUrl}}/hyperliquid/positions/0x5A9e792143bf2708b4765C144451dCa54f559a19
+Content-Type: application/json
+
+### Get Open Orders
+GET {{baseUrl}}/hyperliquid/open-orders/0x5A9e792143bf2708b4765C144451dCa54f559a19
+Content-Type: application/json 

@@ -1,0 +1,79 @@
+---
+description: Create a new feature
+globs: 
+alwaysApply: false
+---
+ # Rule: NestJS Full Feature Implementation Guide
+
+**Glob:** `src/**/*`
+
+**Description:**
+
+This rule provides a step-by-step guide for implementing a new feature within the NestJS application, from core logic to API exposure and integration. It ensures consistency and adherence to established patterns, including service structure, API documentation, and module organization.
+
+**Guidelines:**
+
+1.  **Define Feature Scope:** Clearly understand the requirements and scope of the new feature.
+
+2.  **Create Feature Directory:** Create a dedicated directory for the feature under `src/` (e.g., `src/my-feature/`).
+
+3.  **Install Dependencies:** Identify and install any necessary external libraries or SDKs using the project's package manager (e.g., `pnpm add some-sdk`).
+
+4.  **Create Service (`*.service.ts`):**
+    *   Implement the core business logic within a NestJS service class.
+    *   Adhere to the `nestjs-service-creation.mdc` rule (use `@Injectable`, `Logger`, constructor injection, etc.).
+    *   Define necessary interfaces or use DTOs for internal data structures if needed.
+    *   Handle errors appropriately using the service logger.
+
+5.  **Create DTOs (`dto/*.dto.ts`):**
+    *   Create a `dto` subdirectory within the feature folder.
+    *   Define Data Transfer Objects (DTOs) for API request parameters (if applicable) and response bodies.
+    *   Use `@nestjs/swagger` decorators (`@ApiProperty`) to document each DTO property for OpenAPI/Swagger generation.
+    *   Ensure DTOs accurately represent the data exchanged via the API.
+
+6.  **Create Controller (`*.controller.ts`):**
+    *   Create a NestJS controller class using `@Controller()`.
+    *   Use `@ApiTags()` to group endpoints under a relevant tag in Swagger.
+    *   Inject the feature's service via the constructor.
+    *   Define API endpoints using appropriate HTTP method decorators (`@Get`, `@Post`, `@Put`, `@Delete`, etc.) and route paths.
+    *   Use parameter decorators (`@Param`, `@Query`, `@Body`) to receive input. Validate input using pipes if necessary (e.g., `ValidationPipe`).
+    *   Use `@ApiOperation`, `@ApiParam`, `@ApiQuery`, `@ApiResponse` decorators from `@nestjs/swagger` to thoroughly document each endpoint, including request parameters, responses (success and error cases), and descriptions.
+    *   Ensure the controller methods return the defined response DTOs.
+
+7.  **Create Module (`*.module.ts`):**
+    *   Create a NestJS module class using `@Module()`.
+    *   Declare the feature's `Controller` in the `controllers` array.
+    *   Declare the feature's `Service` (and any other providers) in the `providers` array.
+    *   If the service needs to be used by other modules, add it to the `exports` array.
+
+8.  **Integrate into AppModule (`src/app.module.ts`):**
+    *   Import the newly created feature module into the main `AppModule`.
+    *   Add the feature module to the `imports` array within the `@Module` decorator of `AppModule`.
+
+9.  **Testing (Optional but Recommended):**
+    *   Write unit tests for the service logic.
+    *   Write e2e tests for the controller endpoints.
+
+10. **Review and Refactor:** Review the implemented code for adherence to rules, clarity, and efficiency. Refactor as needed.
+
+**Example Flow (Hyperliquid Feature):**
+
+1.  `src/hyperliquid/` directory created.
+2.  `pnpm add @nktkas/hyperliquid` executed.
+3.  `HyperliquidService` created in `src/hyperliquid/hyperliquid.service.ts`.
+4.  `HyperliquidPositionDto` created in `src/hyperliquid/dto/position.dto.ts`.
+5.  `HyperliquidController` created in `src/hyperliquid/hyperliquid.controller.ts` using the DTO and service.
+6.  `HyperliquidModule` created in `src/hyperliquid/hyperliquid.module.ts`.
+7.  `HyperliquidModule` imported into `src/app.module.ts`.
+
+**Reasoning:**
+
+Following this structured approach ensures:
+*   **Consistency:** All features are implemented using the same patterns.
+*   **Modularity:** Features are self-contained and easier to manage.
+*   **Maintainability:** Code is organized logically, making updates and debugging simpler.
+*   **Discoverability:** API endpoints are well-documented via Swagger.
+*   **Testability:** Components are structured for easier unit and e2e testing.
+*   **Collaboration:** Provides a clear process for team members implementing new features.
+
+By adhering to this guide, we build a robust, maintainable, and well-documented NestJS application.

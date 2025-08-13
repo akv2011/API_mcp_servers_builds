@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrixapp.ninja
+
+### Health Check
+GET {{baseUrl}}/
+
+### View API Documentation
+GET {{baseUrl}}/api-docs
+Content-Type: application/json
+
+# Available chains: optimism, base, mode, bob, fraxtal, lisk, ink, superseed, worldchain, swell, soneium 

@@ -1,0 +1,30 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrix.ninja
+
+#######################
+### Positions API
+#######################
+
+### Get Chain Positions (All Protocols)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7?chain=base
+Content-Type: application/json
+
+### Get Chain Positions (Aave Only)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7?chain=base&protocol=aave
+Content-Type: application/json
+
+### Get Chain Positions (Morpho Only)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7?protocol=morpho
+Content-Type: application/json
+
+### Get All Chain Positions (All Protocols)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7
+Content-Type: application/json
+
+### Get All Chain Positions (Aave Only)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7?protocol=aave
+Content-Type: application/json
+
+### Get All Chain Positions (Morpho Only)
+GET {{baseUrl}}/beta/v0/positions/0x1155b614971f16758C92c4890eD338C9e3ede6b7?protocol=morpho
+Content-Type: application/json 

@@ -1,0 +1,167 @@
+/* Matrix Theme for Swagger UI */
+
+body {
+  background-color: #000;
+  color: #0f0 !important;
+  font-family: monospace;
+}
+
+.swagger-ui .info .title {
+  color: #0f0 !important;
+  text-shadow: 0 0 10px #0f0;
+}
+
+.swagger-ui .info h1, .swagger-ui .info h2, .swagger-ui .info h3,
+.swagger-ui .info h4, .swagger-ui .info h5, .swagger-ui .info h6 {
+  color: #0f0 !important;
+}
+
+.swagger-ui .opblock-tag,
+.swagger-ui .opblock .opblock-summary-method,
+.swagger-ui .opblock .opblock-summary-path,
+.swagger-ui .opblock .opblock-summary-description {
+  color: #0f0 !important;
+}
+
+.swagger-ui .markdown p, .swagger-ui .markdown pre,
+.swagger-ui .renderedMarkdown p, .swagger-ui .renderedMarkdown pre,
+.swagger-ui table thead tr th, .swagger-ui table tbody tr td {
+  color: #0f0 !important;
+}
+
+.swagger-ui .opblock {
+  background: rgba(0, 20, 0, 0.5) !important;
+  border: 1px solid #0f0 !important;
+}
+
+.swagger-ui input, .swagger-ui textarea {
+  background: rgba(0, 0, 0, 0.7) !important;
+  color: #0f0 !important;
+  border: 1px solid #0f0 !important;
+}
+
+.swagger-ui .topbar {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  border-bottom: 1px solid #0f0;
+}
+
+.swagger-ui .btn {
+  background-color: #0a0 !important;
+  color: #000 !important;
+}
+
+.swagger-ui .model {
+  color: #0f0 !important;
+}
+
+.swagger-ui .model-toggle:after {
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%230f0' d='M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'/%3E%3C/svg%3E") 50% no-repeat;
+}
+
+.swagger-ui section.models .model-container {
+  background: rgba(0, 20, 0, 0.5) !important;
+  border: 1px solid #0f0 !important;
+}
+
+.swagger-ui .scheme-container {
+  background: rgba(0, 20, 0, 0.5) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 255, 0, 0.2) !important;
+}
+
+.swagger-ui select {
+  background: #000 !important;
+  color: #0f0 !important;
+  border: 1px solid #0f0 !important;
+}
+
+.swagger-ui .response-col_status {
+  color: #0f0 !important;
+}
+
+.swagger-ui .responses-table .response-col_status {
+  color: #0f0 !important;
+}
+
+.swagger-ui .parameter__name,
+.swagger-ui .parameter__type,
+.swagger-ui .parameter__deprecated,
+.swagger-ui .parameter__in,
+.swagger-ui .parameter__name,
+.swagger-ui table .col_header {
+  color: #0f0 !important;
+}
+
+/* Fix for dropdown arrows */
+.swagger-ui .opblock-summary-control .arrow {
+  border-color: #0f0 transparent transparent !important;
+}
+
+.swagger-ui .opblock-summary-control .arrow.is-open {
+  border-color: transparent transparent #0f0 !important;
+}
+
+.swagger-ui .expand-operation .arrow {
+  border-color: #0f0 transparent transparent !important;
+}
+
+.swagger-ui .expand-operation .arrow.is-open {
+  border-color: transparent transparent #0f0 !important;
+}
+
+.swagger-ui .tab-header .tab-item.active h4 span:after {
+  background: #0f0 !important;
+}
+
+/* Make arrows more visible */
+.swagger-ui svg {
+  fill: #0f0 !important;
+}
+
+/* Ensure dropdown caret is visible */
+.swagger-ui .opblock-summary-control:after {
+  border-color: #0f0 transparent transparent !important;
+}
+
+.swagger-ui .opblock-summary-control[aria-expanded="true"]:after {
+  border-color: transparent transparent #0f0 !important;
+}
+
+/* Fix for all types of dropdown arrows in Swagger UI */
+.swagger-ui .arrow,
+.swagger-ui .arrow:after,
+.swagger-ui .arrow:before,
+.swagger-ui select:after,
+.swagger-ui .response-control:after,
+.swagger-ui .opblock-control-arrow:after {
+  border-color: #0f0 !important;
+  opacity: 1 !important;
+}
+
+/* Add visible caret for dropdowns */
+.swagger-ui .opblock-control-arrow:after {
+  width: 0 !important;
+  height: 0 !important;
+  content: "" !important;
+  border-top: 8px solid #0f0 !important;
+  border-left: 5px solid transparent !important;
+  border-right: 5px solid transparent !important;
+  display: inline-block !important;
+  margin-left: 5px !important;
+}
+
+/* Ensure menu items are visible with proper contrast */
+.swagger-ui .menu-item {
+  background-color: rgba(0, 20, 0, 0.9) !important;
+  color: #0f0 !important;
+  border: 1px solid #0f0 !important;
+}
+
+.swagger-ui select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  padding-right: 25px !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%230f0' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+} 

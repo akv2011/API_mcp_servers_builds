@@ -1,0 +1,80 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrix.ninja
+
+#######################
+### Token Operations
+#######################
+
+### Generate Token Approval Transaction
+POST {{baseUrl}}/tokens/approve
+Content-Type: application/json
+
+{
+  "chain": "optimism",
+  "owner": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0",
+  "tokenIdentifier": "USDC", 
+  "spender": "0x1111111111111111111111111111111111111111",
+  "amount": "1000.50"
+}
+
+#######################
+### Aave Operations (Beta v0)
+#######################
+
+### Supply Asset to Aave (Optimism Example)
+POST {{baseUrl}}/beta/v0/aave/supply/optimism
+Content-Type: application/json
+
+{
+  "sender": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0",
+  "call_data": {
+    "asset": "USDC", 
+    "amount": 100.5,
+    "on_behalf_of": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0"
+  }
+}
+
+###
+
+### Withdraw Asset from Aave (Base Example)
+POST {{baseUrl}}/beta/v0/aave/withdraw/base
+Content-Type: application/json
+
+{
+  "sender": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0",
+  "call_data": {
+    "asset": "WETH", 
+    "amount": 0.1,
+    "on_behalf_of": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0"
+  }
+}
+
+###
+
+### Borrow Asset from Aave (Arbitrum Example)
+POST {{baseUrl}}/beta/v0/aave/borrow/arbitrum
+Content-Type: application/json
+
+{
+  "sender": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0",
+  "call_data": {
+    "asset": "DAI", 
+    "amount": 50,
+    "on_behalf_of": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0"
+  }
+}
+
+###
+
+### Repay Borrowed Asset to Aave (Optimism Example)
+POST {{baseUrl}}/beta/v0/aave/repay/optimism
+Content-Type: application/json
+
+{
+  "sender": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0",
+  "call_data": {
+    "asset": "USDC", 
+    "amount": 25.75, 
+    "on_behalf_of": "0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0"
+  }
+} 

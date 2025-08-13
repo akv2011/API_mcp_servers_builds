@@ -1,0 +1,58 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Rule: Use NestJS Logger instead of console logging
+
+**Glob:** `src/**/*.ts`
+
+**Description:**
+
+This rule enforces the use of the NestJS `Logger` for all logging within the backend codebase (`src` directory). Direct use of `console.log`, `console.warn`, `console.error`, etc., is discouraged to ensure consistent, context-aware logging practices across the application.
+
+**Guidelines:**
+
+1.  **Import:** Import `Logger` from `@nestjs/common`.
+2.  **Instantiation:** Instantiate the logger within your service, controller, or module, typically providing the class name as the context.
+    ```typescript
+    import { Injectable, Logger } from '@nestjs/common';
+
+    @Injectable()
+    export class MyService {
+      private readonly logger = new Logger(MyService.name);
+      // ...
+    }
+    ```
+    Or for standalone functions/modules:
+    ```typescript
+    import { Logger } from '@nestjs/common';
+
+    const logger = new Logger('MyModuleName');
+    ```
+3.  **Usage:** Use the appropriate logger methods (`log`, `warn`, `error`, `debug`, `verbose`) instead of `console` methods. Include relevant context and error stack traces when logging errors.
+    ```typescript
+    // Correct
+    this.logger.log('Starting process...');
+    this.logger.warn('Potential issue detected.');
+    try {
+      // ... some operation
+    } catch (error: any) {
+      this.logger.error(`Operation failed: ${error.message}`, error.stack);
+    }
+
+    // Incorrect
+    console.log('Starting process...');
+    console.warn('Potential issue detected.');
+    console.error('Operation failed:', error);
+    ```
+
+**Reasoning:**
+
+Using the NestJS `Logger` provides several benefits:
+-   **Consistency:** Standardizes logging across the application.
+-   **Context:** Automatically includes context (like the class name) in log messages.
+-   **Level Control:** Allows for easier configuration of log levels.
+-   **Extensibility:** Can be integrated with more advanced logging libraries or external services.
+
+By adhering to this rule, we maintain cleaner, more manageable, and informative logs.

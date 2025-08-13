@@ -1,0 +1,243 @@
+---
+description: Instructions to implement MCP tool
+globs: 
+alwaysApply: false
+---
+# Creating MCP Tools from Controller Functions
+
+This rule provides guidance on converting NestJS controller endpoints into Model Context Protocol (MCP) tools for use with Cursor.
+
+## Overview
+
+When converting a controller endpoint to an MCP tool:
+1. Create a new `tools` directory within your module directory
+2. Create a new `*.tool.ts` file inside the `tools` directory
+3. Follow the MCP tool structure using the `@Tool` decorator
+4. Maintain parameter consistency with the controller endpoint
+5. Format responses according to MCP content structure
+6. Register the tool in your module's providers
+
+## Directory Structure
+
+```
+src/
+  your-module/
+    tools/
+      your-module.tool.ts
+    controllers/
+      your-module.controller.ts
+    your-module.module.ts
+```
+
+## Tool Structure Template
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { Tool } from '@rekog/mcp-nest';
+import { z } from 'zod';
+import { Context } from '@rekog/mcp-nest/dist/services/mcp-tools.discovery';
+
+@Injectable()
+export class YourTool {
+  constructor(private readonly yourService: YourService) {}
+
+  @Tool({
+    name: 'your_tool_name',
+    description: 'Description matching Swagger documentation',
+    parameters: z.object({
+      // Convert @Param, @Query, @Body to Zod schema
+      paramName: z.string().describe('Parameter description'),
+    }),
+  })
+  async yourToolMethod(params: YourParams, _context: Context) {
+    // Implementation logic from controller
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify(yourResult)
+      }]
+    };
+  }
+}
+```
+
+## Module Registration
+
+```typescript
+import { Module } from '@nestjs/common';
+import { YourTool } from './tools/your-module.tool';
+
+@Module({
+  // ... other imports
+  providers: [
+    // ... other providers
+    YourTool
+  ],
+})
+export class YourModule {}
+```
+
+## Key Conversion Rules
+
+1. **Naming Convention**:
+   - Tool directory: `tools/`
+   - Tool file name: `{module}.tool.ts`
+   - Tool class name: `{Module}Tool`
+   - Tool method name: Should reflect the controller endpoint purpose
+
+2. **Parameter Translation**:
+   - Convert controller decorators (@Param, @Query, @Body) to Zod schema
+   - Maintain the same parameter names and types
+   - Add descriptive comments using `.describe()` in Zod schema
+
+3. **Response Format**:
+   - Wrap controller responses in MCP content structure
+   - Use `JSON.stringify()` for object responses
+   - Maintain error response structure
+
+## Example Conversion
+
+From controller:
+```typescript
+@Get(':query')
+async getToken(@Param('query') query: string) {
+  // controller implementation
+}
+```
+
+To MCP tool:
+```typescript
+@Tool({
+  name: 'get_token',
+  description: 'Get token data by symbol or name',
+  parameters: z.object({
+    query: z.string().describe('Token symbol or name to search for'),
+  }),
+})
+async getToken(params: { query: string }, _context: Context) {
+  // Same implementation logic
+  return {
+    content: [{
+      type: 'text',
+      text: JSON.stringify(result)
+    }]
+  };
+}
+```
+
+## Best Practices
+
+1. **Directory Structure**:
+   - Keep all MCP tools in a dedicated `tools` directory
+   - Group related tools in the same file
+   - Follow consisten**tion to tool description
+   - Maintain parameter descriptions from API docs
+   - Document any MCP-specific behavior
+
+3. **Error Handling**:
+   - Preserve controller error handling logic
+   - Format errors consistently in MCP response structure
+   - Include helpful error messages
+
+4. **Testing**:
+   - Test tool through Cursor's MCP interface
+   - Verify parameter validation
+   - Ensure response format is correct
+
+## Integration Steps
+
+1. Create the `tools` directory in your module
+2. Create the tool file with appropriate naming
+3. Implement the tool following the template
+4. Register the tool in your module's providers
+5. Configure the MCP server in Cursor settings
+6. Test the tool through Cursor's AI interface
+
+## References
+
+- @Model Context Protocol Documentation
+- @Cursor MCP Integration Guide
+
+## MCP Tool Creation (@rekog/mcp-nest)
+
+When creating MCP tools for NestJS services in this project:
+
+1.  **Location**: Place tools in `src/<module>/tools/<module>.tool.ts`.
+2.  **Structure**: Use the `@rekog/mcp-nest` library and the `@Tool` decorator.
+3.  **Base Imports**:
+    ```typescript
+    import { Injectable } from '@nestjs/common';
+    import { z } from 'zod';
+    import { Tool } from '@rekog/mcp-nest';
+    import { Context } from '@rekog/mcp-nest/dist/services/mcp-tools.discovery';
+    import { /* Your Service(s) */ } from '../services/your.service';
+    // ... other necessary imports
+    ```
+4.  **Class Definition**:
+    ```typescript
+    @Injectable()
+    export class YourTool {
+      constructor(private readonly yourService: YourService /* ... */) {}
+
+      @Tool({
+        name: 'your_tool_name', // Snake case
+        description: 'Clear description of the tool\'s function.',
+        parameters: YourZodSchema, // Define input schema using Zod
+      })
+      async yourToolMethod(
+        inputs: z.infer<typeof YourZodSchema>,
+        _context: Context, // Include context even if unused
+      ): Promise<{ content: { type: string; text: string }[] }> { // Standard MCP return type
+        try {
+          // 1. Implement logic (often calling injected services)
+          const result = await this.yourService.doSomething(inputs);
+          // 2. Format success response
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          // 3. Format error response
+          console.error(`Error in YourTool: ${error.message}`, error.stack); // Log internally
+          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+          return { content: [{ type: 'text', text: `Error: ${errorMessage}` }] };
+        }
+      }
+    }
+    ```
+5.  **Module Registration**: Add the tool class to the `providers` array in the corresponding module file (`src/<module>/<module>.module.ts`).
+
+## Token Resolution (using TokenCacheService)
+
+To find a token's contract address and decimals on a specific chain using a `tokenIdentifier` (symbol or address):
+
+1.  **Get Platform ID**: Use the `chainToPlatformId` mapping (currently duplicated in `TokenController` and `TokenApproveTool`, consider moving to `src/token/constants` or similar) to convert `SupportedChain` (e.g., 'optimism') to CoinGecko platform ID (e.g., 'optimism-ethereum').
+2.  **Check Identifier Type**: Use `isAddress(tokenIdentifier)` from `viem`.
+3.  **Find Token**:
+    *   If **address**: Use `tokenCacheService.getTokenByContractAddress(tokenIdentifier)`. Verify the result: `potentialToken?.platforms?.[platformId]?.toLowerCase() === tokenIdentifier.toLowerCase()`. The `tokenAddressOnChain` is the input `tokenIdentifier`.
+    *   If **symbol**: Use `tokenCacheService.findToken(tokenIdentifier, 'symbol')`. Verify the result exists on the target chain: `potentialToken?.platforms?.[platformId]`. Extract the address: `tokenAddressOnChain = foundToken.platforms[platformId]`. (Note: `findToken` uses fuzzy matching).
+4.  **Extract Decimals**: Use `foundToken.decimals` (provide a fallback like `?? 18` if necessary).
+5.  **Handle Not Found**: If no token is found or it doesn't exist on the specified `platformId`, return an appropriate error.
+
+## Zod Enum from Readonly Array
+
+When needing a Zod enum from a `readonly` array defined with `as const` (like `SUPPORTED_CHAINS`):
+
+```typescript
+import { z } from 'zod';
+import { SUPPORTED_CHAINS } from '../../chain'; // Assuming it's readonly
+
+// Create a mutable copy using spread syntax for z.enum
+const SUPPORTED_CHAINS_ZOD = z.enum([
+  ...SUPPORTED_CHAINS,
+] as [string, ...string[]]);
+
+// Usage in schema:
+const schema = z.object({
+  chain: SUPPORTED_CHAINS_ZOD.describe('The chain'),
+});
+```
+
+## Common Type: RawTransaction
+
+For functions/tools generating parameters for sending blockchain transactions, use the shared `RawTransaction` type defined in `src/common/types/transaction.types.ts`.
+
+```typescript
+import { RawTransaction } from '../../common/types/transaction.types';

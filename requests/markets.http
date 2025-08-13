@@ -1,0 +1,26 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrix.ninja
+
+#######################
+### Markets API
+#######################
+
+### Get All Markets (All Protocols)
+GET {{baseUrl}}/markets
+Content-Type: application/json
+
+### Get Markets by Protocol
+GET {{baseUrl}}/markets?protocol=aave&chain=base
+Content-Type: application/json
+
+### Get Markets by Chain
+GET {{baseUrl}}/markets?chain=base
+Content-Type: application/json
+
+### Get Markets by Asset
+GET {{baseUrl}}/markets?collateralTokenSymbol=USDC
+Content-Type: application/json
+
+### Get Markets with Combined Filters
+GET {{baseUrl}}/markets?protocol=aave&chain=base&asset=WETH
+Content-Type: application/json 

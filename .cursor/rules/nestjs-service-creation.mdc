@@ -1,0 +1,138 @@
+---
+description: Creating a new service. A service is the main business logic container for a specific piece of functionality.
+globs: 
+alwaysApply: false
+---
+ # Rule: NestJS Service Creation Standards
+
+**Glob:** `src/**/*.service.ts`
+
+**Description:**
+
+This rule defines the standard structure and implementation patterns for NestJS services within the application. Following these guidelines ensures consistency, maintainability, and proper dependency injection across all services.
+
+**Guidelines:**
+
+1. **File Structure**
+   ```typescript
+   import { Injectable, Logger } from '@nestjs/common';
+   // Other imports...
+   
+   @Injectable()
+   export class MyService {
+     private readonly logger = new Logger(MyService.name);
+     
+     constructor(
+       // Inject dependencies
+     ) {}
+     
+     // Service methods...
+   }
+   ```
+
+2. **Naming Conventions**
+   - File name: `kebab-case.service.ts` (e.g., `user-profile.service.ts`)
+   - Class name: `PascalCase` + `Service` (e.g., `UserProfileService`)
+   - Method names: `camelCase`, descriptive verbs (e.g., `getUserProfile`, `updateUserSettings`)
+
+3. **Class Structure**
+   - Use `@Injectable()` decorator
+   - Define private readonly logger instance using class name
+   - Declare class properties as private readonly when possible
+   - Initialize complex properties in constructor
+   - Use dependency injection via constructor parameters
+
+4. **Error Handling**
+   - Use the class logger for error reporting
+   - Include stack traces and contextual information in error logs
+   - Return appropriate error responses or throw specific exceptions
+   ```typescript
+   try {
+     // Operation
+   } catch (error: any) {
+     this.logger.error(
+       `Failed to perform operation: ${error?.message}`,
+       error?.stack,
+     );
+     throw error;
+   }
+   ```
+
+5. **Type Safety**
+   - Define and export interfaces/types for service responses
+   - Use explicit return types for all methods
+   - Avoid using `any` type except in catch blocks
+   ```typescript
+   export interface ServiceResponse {
+     // Response properties
+   }
+
+   async performOperation(): Promise<ServiceResponse> {
+     // Implementation
+   }
+   ```
+
+6. **Configuration and Dependencies**
+   - Inject dependencies through constructor
+   - Use ConfigService for environment variables
+   - Initialize external clients/connections in constructor
+   ```typescript
+   constructor(
+     private readonly configService: ConfigService,
+     private readonly dependencyService: DependencyService,
+   ) {
+     // Initialize any necessary clients/connections
+   }
+   ```
+
+**Example Implementation:**
+```typescript
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+export interface ServiceResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+@Injectable()
+export class ExampleService {
+  private readonly logger = new Logger(ExampleService.name);
+  private readonly apiClient: SomeClient;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly dependencyService: DependencyService,
+  ) {
+    this.apiClient = new SomeClient({
+      apiKey: this.configService.get<string>('API_KEY'),
+    });
+  }
+
+  async performOperation(param: string): Promise<ServiceResponse> {
+    try {
+      const result = await this.apiClient.doSomething(param);
+      return { success: true, data: result };
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to perform operation: ${error?.message}`,
+        error?.stack,
+      );
+      return { success: false, error: error?.message };
+    }
+  }
+}
+```
+
+**Reasoning:**
+
+Following these service creation standards provides several benefits:
+- Consistent error handling and logging across services
+- Proper dependency injection and configuration management
+- Type safety and better maintainability
+- Clear separation of concerns
+- Easier testing and mocking
+- Standardized approach to external client management
+
+By adhering to these guidelines, we ensure that all services in the application are structured consistently and follow NestJS best practices.

@@ -1,0 +1,63 @@
+@baseUrl = http://localhost:3000
+# @baseUrl = https://api.matrixapp.ninja
+
+#######################
+### Token API
+#######################
+
+### Get Token by Symbol (explicit type)
+GET {{baseUrl}}/tokens/tolkien
+Content-Type: application/json
+
+### Get Token by Name (explicit type)
+GET {{baseUrl}}/tokens/bitcoin?type=name
+Content-Type: application/json
+
+### Get Token by Contract Address (explicit type)
+GET {{baseUrl}}/tokens/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984?type=address
+Content-Type: application/json
+
+### Auto-detect Search Type (symbol)
+GET {{baseUrl}}/tokens/eth
+Content-Type: application/json
+
+### Auto-detect Search Type (name)
+GET {{baseUrl}}/tokens/ethereum
+Content-Type: application/json
+
+### Auto-detect Search Type (address - automatically detected for 0x... queries)
+GET {{baseUrl}}/tokens/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+Content-Type: application/json
+
+### Get Token Cache Status
+GET {{baseUrl}}/tokens/cache/status
+Content-Type: application/json
+
+### Get Detailed Token Cache Status
+GET {{baseUrl}}/tokens/cache/status?detailed=true
+Content-Type: application/json
+
+### Manually Refresh Token Cache (requires API key)
+POST {{baseUrl}}/tokens/cache/refresh
+Content-Type: application/json
+x-api-key: your-secure-api-key 
+
+### Get Token Data with 7 Days Historical Price
+GET {{baseUrl}}/tokens/bitcoin?type=name&historical_days=7
+Content-Type: application/json
+
+#######################
+### Token Balance API
+#######################
+
+### Get Single Token Balance
+GET {{baseUrl}}/tokens/balances/single?walletAddress=0x5A9e792143bf2708b4765C144451dCa54f559a19&chain=mainnet&tokenIdentifier=pepe
+Content-Type: application/json
+
+### Get Single Token Balance by Contract Address
+GET {{baseUrl}}/tokens/balances/single?walletAddress=0x5A9e792143bf2708b4765C144451dCa54f559a19&chain=mainnet&tokenIdentifier=0x0000000000000000000000000000000000000000
+Content-Type: application/json
+
+### Get Multiple Token Balances
+GET {{baseUrl}}/tokens/balances/multiple?walletAddress=0x552008c0f6870c2f77e5cC1d2eb9bdff03e30Ea0&tokens=[{"chain":"mainnet","tokenIdentifier":"ETH"},{"chain":"mainnet","tokenIdentifier":"USDC"},{"chain":"optimism","tokenIdentifier":"OP"}]
+Content-Type: application/json 
