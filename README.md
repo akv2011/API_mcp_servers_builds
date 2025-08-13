@@ -8,7 +8,7 @@
   
   <br/>
   <a href="#features">Features</a> •
-  <a href="#quickstart">Quickstart</a> •tps://img.shields.io/badge/M-A-00FF00?style=for-the-ba<table>
+  <a href="#quickstart">Quickstart</a> <table>
 <tr>
   <td width="50%" align="center">
     <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-AAVE-B6509E?style=for-the-badge" /><br/>
@@ -21,7 +21,7 @@
     <small>Optimized lending through peer-to-peer matching</small>
   </td>
 </tr>
-</table>00" /> <img src="https://img.shields.io/badge/T-R-00FF00?style=for-the-badge&labelColor=000000" /> <img src="https://img.shields.io/badge/I-X-00FF00?style=for-the-badge&labelColor=000000" />
+</table><img src="https://img.shields.io/badge/T-R-00FF00?style=for-the-badge&labelColor=000000" /> <img src="https://img.shields.io/badge/I-X-00FF00?style=for-the-badge&labelColor=000000" />
 
 <div align="center">
   <img src="https://img.shields.io/badge/-API%20%26%20MCP%20SERVERS-00FF00?style=for-the-badge&labelColor=000000" alt="API & MCP Servers" />
