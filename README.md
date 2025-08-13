@@ -1,12 +1,5 @@
 # API & MCP Server Builds
 
-<div align="center">
-  <img src="https://img.shields.io/badge/-API%20%26%20MCP%20SERVERS-00FF00?style=for-the-badge&labelColor=000000" alt="API & MCP Servers" />
-  <br/>
-  <img src="https://img.shields.io/badge/version-2.0-brightgreen" alt="Version" /> 
-  <img src="https://img.shields.io/badge/TypeScript-5.8-blue" alt="TypeScript" /> 
-  <img src="https://img.shields.io/badge/NestJS-11.0-red" alt="NestJS" />
-  <br/><br/>
   
   <h2>
     <img src="https://img.shields.io/badge/UNIFIED-API%20COLLECTION-00FF00?style=for-the-badge&labelColor=000000" alt="Unified API Collection" />
