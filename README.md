@@ -59,15 +59,6 @@
 
 <br/>
 
-<div align="center">
-  <table width="100%">
-    <tr>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%9A%80%20API%20SERVERS-000000?style=for-the-badge" alt="API Servers" /></td>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%A4%96%20MCP%20INTEGRATION-000000?style=for-the-badge" alt="MCP Integration" /></td>
-      <td align="center" width="33%"><img src="https://img.shields.io/badge/-%F0%9F%9B%A1%EF%B8%8F%20ENTERPRISE%20READY-000000?style=for-the-badge" alt="Enterprise Ready" /></td>
-    </tr>
-  </table>
-</div>
 
 ---
 
