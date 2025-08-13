@@ -1,9 +1,6 @@
 # API & MCP Server Builds
 
-  
-  <h2>
-    <img src="https://img.shields.io/badge/UNIFIED-API%20COLLECTION-00FF00?style=for-the-badge&labelColor=000000" alt="Unified API Collection" />
-  </h2>
+
   
   <p align="center">
     <i>A collection of API servers and MCP (Model Context Protocol) servers for various projects i built and used for vartious integrations.</i>
