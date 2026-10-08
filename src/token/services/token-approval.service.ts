@@ -50,27 +50,26 @@ export class TokenApprovalService {
         address: userAddress,
       });
 
-      // Estimate gas - handle potential errors
+      // Gas limit and fee per gas are separate numbers; a failed estimate leaves both to the wallet.
+      let gas: bigint | undefined;
       let maxFeePerGas: bigint | undefined;
       let maxPriorityFeePerGas: bigint | undefined;
       try {
-        const gasEstimate = await client.estimateGas({
+        gas = await client.estimateGas({
           account: userAddress,
           to: tokenAddress,
           data: data,
           value: 0n,
         });
-        maxFeePerGas = gasEstimate; // Using estimateGas as maxFeePerGas for simplicity here, adjust if needed
-
         const feeData = await client.estimateFeesPerGas();
+        maxFeePerGas = feeData.maxFeePerGas;
         maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
       } catch (gasError) {
         console.error(
           `Error estimating gas for approval on chain ${chain}:`,
           gasError,
         );
-        // Decide how to handle gas estimation errors (e.g., throw, return defaults)
-        // Setting to undefined will let the wallet/sender handle gas estimation
+        gas = undefined;
         maxFeePerGas = undefined;
         maxPriorityFeePerGas = undefined;
       }
@@ -82,6 +81,7 @@ export class TokenApprovalService {
         data,
         value: 0n, // Approve value is always 0
         nonce,
+        gas,
         maxFeePerGas,
         maxPriorityFeePerGas,
       };
