@@ -1,161 +1,82 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { MorphoService } from '../morpho/morpho.service';
+// The real Aave and Morpho services pull in ESM-only and network-bound dependencies; these tests replace
+// both fetchers anyway, so the modules are stubbed.
+jest.mock('../aave/aave.service', () => ({ AaveService: class {} }));
+jest.mock('../morpho/morpho.service', () => ({ MorphoService: class {} }));
+
 import { MarketsService } from './markets.service';
-import { MarketSearchQueryDto } from '../common/dto/market-search.dto';
-import { ProtocolPoolsDto } from '../common/dto/market.dto';
-import { AaveService } from 'src/aave/aave.service';
+import { MarketAssetDto, ProtocolPoolsDto } from './dto/market.dto';
 
-describe('MarketsService', () => {
-  let service: MarketsService;
-  let morphoService: MorphoService;
-  let aaveService: AaveService;
+const asset = (symbol: string): MarketAssetDto => ({
+  underlyingSymbol: symbol,
+  totalSupply: '0',
+  totalSupplyUsd: '0',
+  totalBorrow: '0',
+  totalBorrowUsd: '0',
+  liquidity: '0',
+  liquidityUsd: '0',
+  supplyApy: '0.05',
+  borrowApy: '0.08',
+  isCollateral: true,
+  ltv: '0.80',
+  rewards: [],
+});
 
-  const mockMorphoMarkets: ProtocolPoolsDto = {
-    protocol: 'morpho',
-    pools: [
-      {
-        name: 'WETH Pool',
-        poolId: '0x123',
-        totalValueUsd: 500000,
-        assets: [
-          {
-            underlyingSymbol: 'WETH',
-            totalSupply: '1000000000000000000',
-            totalSupplyUsd: '500000',
-            totalBorrow: '500000000000000000',
-            totalBorrowUsd: '250000',
-            liquidity: '500000000000000000',
-            liquidityUsd: '250000',
-            supplyApy: '0.05',
-            borrowApy: '0.08',
-            isCollateral: true,
-            ltv: '0.8',
-            rewards: [],
-          },
-        ],
-      },
-    ],
-  };
+const markets = (protocol: string, ...symbols: string[]): ProtocolPoolsDto => ({
+  protocol,
+  chains: [{ chain: 'base', pools: [{ name: `${protocol} pool`, poolId: '0x1', totalValueUsd: 1, assets: symbols.map(asset) }] }],
+});
 
-  const mockAaveMarkets: ProtocolPoolsDto = {
-    protocol: 'aave',
-    pools: [
-      {
-        name: 'WETH Pool',
-        poolId: '0x456',
-        totalValueUsd: 250000,
-        assets: [
-          {
-            underlyingSymbol: 'WETH',
-            totalSupply: '500000000000000000',
-            totalSupplyUsd: '250000',
-            totalBorrow: '250000000000000000',
-            totalBorrowUsd: '125000',
-            liquidity: '250000000000000000',
-            liquidityUsd: '125000',
-            supplyApy: '0.04',
-            borrowApy: '0.07',
-            isCollateral: true,
-            ltv: '0.75',
-            rewards: [],
-          },
-        ],
-      },
-    ],
-  };
+function build() {
+  const store = new Map<string, unknown>();
+  const cache = { get: async (k: string) => store.get(k), set: async (k: string, v: unknown) => void store.set(k, v) };
+  const service = new MarketsService({} as any, {} as any, cache as any);
+  const aave = jest.spyOn(service as any, 'getAaveMarkets').mockResolvedValue(markets('aave', 'WETH', 'USDC'));
+  const morpho = jest.spyOn(service as any, 'getMorphoMarkets').mockResolvedValue(markets('morpho', 'WETH'));
+  return { service, aave, morpho, store };
+}
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        MarketsService,
-        {
-          provide: MorphoService,
-          useValue: {
-            getMarketInfo: jest.fn().mockResolvedValue(mockMorphoMarkets),
-          },
-        },
-        {
-          provide: AaveService,
-          useValue: {
-            getMarketInfo: jest.fn().mockResolvedValue(mockAaveMarkets),
-          },
-        },
-      ],
-    }).compile();
-
-    service = module.get<MarketsService>(MarketsService);
-    morphoService = module.get<MorphoService>(MorphoService);
-    aaveService = module.get<AaveService>(AaveService);
+describe('MarketsService.getAllMarkets', () => {
+  it('returns every protocol that has markets', async () => {
+    const { service } = build();
+    const result = await service.getAllMarkets({});
+    expect(result.protocols.map((p) => p.protocol).sort()).toEqual(['aave', 'morpho']);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('keeps the other protocols when one of them fails', async () => {
+    const { service, morpho } = build();
+    morpho.mockRejectedValue(new Error('Morpho API down'));
+    const result = await service.getAllMarkets({});
+    expect(result.protocols.map((p) => p.protocol)).toEqual(['aave']);
   });
 
-  describe('getAllMarkets', () => {
-    it('should return markets for specific protocol when protocol is specified', async () => {
-      const query: MarketSearchQueryDto = { protocol: 'morpho', chain: 'base' };
-      const result = await service.getAllMarkets(query);
+  it('drops a protocol that returns no chains', async () => {
+    const { service, morpho } = build();
+    morpho.mockResolvedValue({ protocol: 'morpho', chains: [] });
+    const result = await service.getAllMarkets({});
+    expect(result.protocols.map((p) => p.protocol)).toEqual(['aave']);
+  });
 
-      expect(result.chains[0].protocols).toHaveLength(1);
-      expect(result.chains[0].protocols[0].protocol).toBe('morpho');
-    });
+  it('only asks the protocol named in the query', async () => {
+    const { service, aave } = build();
+    const result = await service.getAllMarkets({ protocol: 'morpho' } as any);
+    expect(aave).not.toHaveBeenCalled();
+    expect(result.protocols.map((p) => p.protocol)).toEqual(['morpho']);
+  });
 
-    it('should return markets for specific chain when chain is specified', async () => {
-      const query: MarketSearchQueryDto = { chain: 'base' };
-      const result = await service.getAllMarkets(query);
+  // A single symbol is filtered by the fetchers themselves (a Morpho pool is a collateral and loan pair,
+  // so this pass must not split it); this pass only narrows when both symbols are given.
+  it('with both symbols, keeps assets matching either, ignoring case, and prunes what is left empty', async () => {
+    const { service } = build();
+    const result = await service.getAllMarkets({ collateralTokenSymbol: 'usdc', borrowTokenSymbol: 'dai' });
+    expect(result.protocols.map((p) => p.protocol)).toEqual(['aave']);
+    expect(result.protocols[0].chains[0].pools[0].assets.map((a) => a.underlyingSymbol)).toEqual(['USDC']);
+  });
 
-      expect(result.chains).toHaveLength(1);
-      expect(result.chains[0].chain).toBe('base');
-    });
-
-    it('should filter out protocols with no pools', async () => {
-      const emptyMarkets: ProtocolPoolsDto = {
-        protocol: 'morpho',
-        pools: [],
-      };
-      jest
-        .spyOn(morphoService, 'getMarketInfo')
-        .mockResolvedValueOnce(emptyMarkets);
-
-      const query: MarketSearchQueryDto = { chain: 'base' };
-      const result = await service.getAllMarkets(query);
-
-      // Only Aave should remain with pools
-      expect(result.chains[0].protocols).toHaveLength(1);
-      expect(result.chains[0].protocols[0].protocol).toBe('aave');
-    });
-
-    it('should filter out chains with no protocols', async () => {
-      const emptyMarkets: ProtocolPoolsDto = {
-        protocol: 'morpho',
-        pools: [],
-      };
-      jest
-        .spyOn(morphoService, 'getMarketInfo')
-        .mockResolvedValueOnce(emptyMarkets);
-      jest
-        .spyOn(aaveService, 'getMarketInfo')
-        .mockResolvedValueOnce(emptyMarkets as any);
-
-      const query: MarketSearchQueryDto = { chain: 'base' };
-      const result = await service.getAllMarkets(query);
-
-      // No chains should be returned
-      expect(result.chains).toHaveLength(0);
-    });
-
-    it('should handle errors from protocol services', async () => {
-      jest
-        .spyOn(morphoService, 'getMarketInfo')
-        .mockRejectedValueOnce(new Error('Morpho error'));
-
-      const query: MarketSearchQueryDto = { chain: 'base' };
-      const result = await service.getAllMarkets(query);
-
-      // Should still return Aave results
-      expect(result.chains[0].protocols).toHaveLength(1);
-      expect(result.chains[0].protocols[0].protocol).toBe('aave');
-    });
+  it('serves a repeated query from the cache', async () => {
+    const { service, aave, store } = build();
+    await service.getAllMarkets({ chain: 'base' });
+    await service.getAllMarkets({ chain: 'base' });
+    expect(aave).toHaveBeenCalledTimes(1);
+    expect([...store.keys()]).toEqual(['markets:all:base:all:all']);
   });
 });
