@@ -25,7 +25,7 @@ Every tool is read-only. The `generate_*` tools return unsigned transaction data
 |---|---|
 | Who can call | Every route, including `/mcp` and `/sse`, needs an API key: `Authorization: Bearer <key>` (preferred), `x-api-key`, or `?api_key=` for clients that cannot set headers |
 | Key checks | Hosted keys are looked up in the `api_keys` table; a single local `MCP_API_KEY` is compared in constant time |
-| Secrets in logs | Supabase keys, provider RPC URLs and query-string API keys are never written to logs; a query-string key is moved into a header before any handler or library sees the URL |
+| Secrets in logs and errors | Supabase keys, provider RPC URLs and query-string API keys are never written to logs; a query-string key is moved into a header before any handler or library sees the URL. viem copies the full RPC URL, provider key included, into its errors, so every RPC client uses a transport that cuts URLs in errors down to their origin before a tool or the logger sees them |
 | Funds | No tool signs or sends; all 16 tools carry `readOnlyHint: true` |
 | Failures | Failed tool calls set `isError: true` on the result, so a model can tell an error from data |
 

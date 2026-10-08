@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getChainConfig } from '../utils/chain.utils';
-import { PublicClient, createPublicClient, http } from 'viem';
+import { PublicClient, createPublicClient } from 'viem';
+import { rpcTransport } from '../../common/utils/rpc-transport';
 import { SupportedChain } from '../types/chain.type';
 @Injectable()
 export class ChainService {
@@ -41,7 +42,7 @@ export class ChainService {
 
     return createPublicClient({
       chain: chainConfig,
-      transport: http(rpcUrl),
+      transport: rpcTransport(rpcUrl),
     });
   }
 

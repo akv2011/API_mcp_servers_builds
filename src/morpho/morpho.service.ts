@@ -13,7 +13,6 @@ import {
   parseUnits,
   encodeFunctionData,
   createPublicClient,
-  http,
   formatUnits,
   PublicClient,
   Hex,
@@ -22,6 +21,7 @@ import {
 import { mainnet, base } from 'viem/chains';
 import axios from 'axios';
 import { getChainId } from '../common/utils/chain.utils';
+import { rpcTransport } from '../common/utils/rpc-transport';
 // Morpho dependencies - import using pattern matching Compound Blue
 import { DEFAULT_SLIPPAGE_TOLERANCE, MarketId } from '@morpho-org/blue-sdk';
 import {
@@ -191,12 +191,12 @@ export class MorphoService {
     // @ts-ignore - Suppressing persistent viem type incompatibility error
     this.mainnetClient = createPublicClient({
       chain: mainnet,
-      transport: http(mainnetRpcUrl),
+      transport: rpcTransport(mainnetRpcUrl),
     });
     // @ts-ignore - Suppressing persistent viem type incompatibility error
     this.baseClient = createPublicClient({
       chain: base,
-      transport: http(baseRpcUrl),
+      transport: rpcTransport(baseRpcUrl),
     });
 
     // Initialize ADDITIONAL_TOKEN_LISTS with Coingecko token list
