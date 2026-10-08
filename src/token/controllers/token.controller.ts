@@ -279,7 +279,6 @@ export class TokenController {
         tokenIdentifier,
         'symbol',
       );
-      console.log('🚀 ~ TokenController ~ potentialToken:', potentialToken);
       if (potentialToken?.platforms?.[platformId]) {
         foundToken = potentialToken;
         if (foundToken.platforms) {

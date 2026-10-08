@@ -28,8 +28,9 @@ export class ChainService {
     const chainConfig = getChainConfig(chain);
     const rpcUrl = this.getRpcUrl(chain);
 
+    // Provider URLs often carry the API key in the path, so only the host is logged.
     this.logger.log(
-      `Creating public client for chain ${chain} with RPC URL: ${rpcUrl || 'undefined'}`,
+      `Creating public client for chain ${chain} via ${rpcUrl ? new URL(rpcUrl).host : 'the chain default RPC'}`,
     );
 
     if (!rpcUrl) {

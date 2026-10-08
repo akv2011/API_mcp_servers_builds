@@ -10,17 +10,31 @@ type AssetMasterData = Tables['asset_master_data_main']['Row'];
 
 @Injectable()
 export class SupabaseService {
-  private readonly supabase: SupabaseClient<Database>;
+  private readonly client: SupabaseClient<Database> | null;
   private readonly logger = new Logger(SupabaseService.name);
 
   constructor(private configService: ConfigService) {
-    const supabaseUrl = this.configService.getOrThrow<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.getOrThrow<string>('SUPABASE_KEY');
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
+    const supabaseKey = this.configService.get<string>('SUPABASE_KEY');
 
-    this.logger.log(`Supabase URL: ${supabaseUrl}`);
-    this.logger.log(`Supabase Key: ${supabaseKey}`);
+    this.client =
+      supabaseUrl && supabaseKey
+        ? createClient<Database>(supabaseUrl, supabaseKey)
+        : null;
+    if (!this.client) {
+      this.logger.warn(
+        'SUPABASE_URL or SUPABASE_KEY is not set, so asset data lookups are off',
+      );
+    }
+  }
 
-    this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
+  private get supabase(): SupabaseClient<Database> {
+    if (!this.client) {
+      throw new Error(
+        'Asset data is not configured: set SUPABASE_URL and SUPABASE_KEY',
+      );
+    }
+    return this.client;
   }
 
   async getAssetMasterData(

@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +15,8 @@ export type ApiKey = {
 
 @Injectable()
 export class ApiKeyService {
-  private supabaseAdmin: SupabaseClient;
+  private supabaseAdmin: SupabaseClient | null = null;
+  private readonly localKey: string | undefined;
   private readonly logger = new Logger(ApiKeyService.name);
 
   constructor(private configService: ConfigService) {
@@ -22,29 +24,36 @@ export class ApiKeyService {
     const supabaseServiceRoleKey = this.configService.get(
       'UPLINK_SUPABASE_SERVICE_ROLE_KEY',
     );
-    this.logger.log(`Supabase URL: ${supabaseUrl}`);
-    this.logger.log(`Supabase Key: ${supabaseServiceRoleKey}`);
+    this.localKey = this.configService.get<string>('MCP_API_KEY') || undefined;
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
+    if (supabaseUrl && supabaseServiceRoleKey) {
+      this.supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      });
+    } else if (!this.localKey) {
       throw new Error(
-        'Supabase credentials not found in environment. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.',
+        'Set UPLINK_SUPABASE_URL and UPLINK_SUPABASE_SERVICE_ROLE_KEY, or MCP_API_KEY for a single local key.',
       );
     }
-
-    this.logger.log(
-      `Initializing ApiKeyService with Supabase Admin client at ${supabaseUrl}`,
-    );
-
-    // Initialize Supabase Admin client with service role key for API key validation
-    this.supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
   }
 
   async validateApiKey(apiKey: string): Promise<ApiKey | null> {
+    if (this.localKey && sameSecret(apiKey, this.localKey)) {
+      return {
+        id: 'local',
+        name: 'MCP_API_KEY',
+        key: '',
+        created_at: new Date(0).toISOString(),
+        user_id: 'local',
+        status: 'active',
+      };
+    }
+    if (!this.supabaseAdmin) {
+      return null;
+    }
     this.logger.debug(`Validating API key: ${apiKey.substring(0, 8)}...`);
 
     try {
@@ -86,4 +95,10 @@ export class ApiKeyService {
       return null;
     }
   }
+}
+
+// Hashing first gives equal-length buffers, so the comparison time does not reveal the key's length or prefix.
+function sameSecret(given: string, expected: string): boolean {
+  const digest = (v: string) => createHash('sha256').update(v).digest();
+  return timingSafeEqual(digest(given), digest(expected));
 }
