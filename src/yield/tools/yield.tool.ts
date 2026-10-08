@@ -1,3 +1,4 @@
+import { toolError } from '../../common/utils/tool-error';
 import { Injectable, Logger } from '@nestjs/common';
 import { Context, Tool } from '@rekog/mcp-nest';
 import { z } from 'zod';
@@ -16,6 +17,12 @@ export class YieldTool {
 
   @Tool({
     name: 'get_yield_opportunities',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description: 'Get yield opportunities across protocols',
     parameters: z.object({
       chain: z
@@ -107,9 +114,7 @@ export class YieldTool {
         content: [{ type: 'text', text: JSON.stringify({ opportunities }) }],
       };
     } catch (error) {
-      return {
-        content: [{ type: 'text', text: `Error: ${error.message}` }],
-      };
+      return toolError(`Error: ${error.message}`);
     }
   }
 }

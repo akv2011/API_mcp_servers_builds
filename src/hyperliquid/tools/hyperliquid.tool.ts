@@ -1,3 +1,4 @@
+import { toolError } from '../../common/utils/tool-error';
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
 import { Context, Tool } from '@rekog/mcp-nest';
@@ -27,6 +28,12 @@ export class HyperliquidTool {
 
   @Tool({
     name: 'get_hyperliquid_positions',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Retrieves the full clearinghouse state (positions and margin) for a given address on Hyperliquid',
     parameters: GetHyperliquidPositionsParams,
@@ -50,16 +57,18 @@ export class HyperliquidTool {
       );
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
-      return {
-        content: [
-          { type: 'text', text: `Error: ${errorMessage}`, isError: true },
-        ],
-      };
+      return toolError(`Error: ${errorMessage}`);
     }
   }
 
   @Tool({
     name: 'get_hyperliquid_open_orders',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description: 'Get open orders for a user on Hyperliquid',
     parameters: GetHyperliquidOpenOrdersParams,
   })
@@ -82,11 +91,7 @@ export class HyperliquidTool {
       );
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
-      return {
-        content: [
-          { type: 'text', text: `Error: ${errorMessage}`, isError: true },
-        ],
-      };
+      return toolError(`Error: ${errorMessage}`);
     }
   }
 }

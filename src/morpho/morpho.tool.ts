@@ -1,3 +1,4 @@
+import { toolError } from '../common/utils/tool-error';
 import { Injectable } from '@nestjs/common';
 import { Context, Tool } from '@rekog/mcp-nest';
 import { z } from 'zod';
@@ -10,7 +11,13 @@ export class MorphoTool {
 
   @Tool({
     name: 'generate_morpho_borrow_tx',
-    description: 'Borrow assets from Morpho Blue by supplying collateral',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+    description: 'Borrow assets from Morpho Blue by supplying collateral. Returns unsigned transaction data for the wallet to sign; nothing is sent.',
     parameters: z.object({
       chain: z
         .enum(['mainnet', 'base'])
@@ -64,7 +71,13 @@ export class MorphoTool {
 
   @Tool({
     name: 'generate_morpho_vault_deposit_tx',
-    description: 'Deposit assets into a Morpho Earn Vault',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+    description: 'Deposit assets into a Morpho Earn Vault. Returns unsigned transaction data for the wallet to sign; nothing is sent.',
     parameters: z.object({
       chain: z.enum(['mainnet', 'base']).describe('The blockchain network'),
       asset_symbol: z
@@ -99,15 +112,19 @@ export class MorphoTool {
         content: [{ type: 'text', text: JSON.stringify(result) }],
       };
     } catch (error) {
-      return {
-        content: [{ type: 'text', text: `Error: ${error.message}` }],
-      };
+      return toolError(`Error: ${error.message}`);
     }
   }
 
   @Tool({
     name: 'generate_morpho_vault_withdraw_tx',
-    description: 'Withdraw assets from a Morpho Earn Vault',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+    description: 'Withdraw assets from a Morpho Earn Vault. Returns unsigned transaction data for the wallet to sign; nothing is sent.',
     parameters: z.object({
       chain: z.enum(['mainnet', 'base']).describe('The blockchain network'),
       asset_symbol: z
@@ -142,9 +159,7 @@ export class MorphoTool {
         content: [{ type: 'text', text: JSON.stringify(result) }],
       };
     } catch (error) {
-      return {
-        content: [{ type: 'text', text: `Error: ${error.message}` }],
-      };
+      return toolError(`Error: ${error.message}`);
     }
   }
 }

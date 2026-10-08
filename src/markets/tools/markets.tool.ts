@@ -12,6 +12,12 @@ export class MarketsTool {
 
   @Tool({
     name: 'get_lending_markets',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Get all lending markets with optional filtering by chain, protocol, and token symbols',
     parameters: z.object({

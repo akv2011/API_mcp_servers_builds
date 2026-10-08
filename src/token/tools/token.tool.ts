@@ -1,3 +1,4 @@
+import { toolError } from '../../common/utils/tool-error';
 import { Injectable, Logger } from '@nestjs/common';
 import { Context, Tool } from '@rekog/mcp-nest';
 import { z } from 'zod';
@@ -115,7 +116,13 @@ export class TokenTool {
 
   // --- Token Info Tool ---
   @Tool({
-    name: 'get_token_info', // Renamed from get_token_metrics for clarity
+    name: 'get_token_info',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Get token data (like name, symbol, address on different chains, price, market cap) by its symbol, name, or a specific contract address (case insensitive).',
     parameters: TokenInfoSchema,
@@ -208,6 +215,12 @@ export class TokenTool {
   // --- Token Balance Tools ---
   @Tool({
     name: 'get_token_balances',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Get the balances of specific tokens on specific chains for a given wallet address.',
     parameters: MultipleTokenBalanceSchema,
@@ -247,20 +260,18 @@ export class TokenTool {
         `Error in 'get_token_balances' for wallet ${params.wallet_address}: ${errorMessage}`,
         error instanceof Error ? error.stack : undefined,
       );
-      return {
-        content: [
-          {
-            isError: true,
-            type: 'text',
-            text: `Error getting token balances: ${errorMessage}. Please check the wallet address, token identifiers, and ensure the chains are supported (${SUPPORTED_CHAINS.join(', ')}).`,
-          },
-        ],
-      };
+      return toolError(`Error getting token balances: ${errorMessage}. Please check the wallet address, token identifiers, and ensure the chains are supported (${SUPPORTED_CHAINS.join(', ')}).`);
     }
   }
 
   @Tool({
     name: 'get_wallet_balance',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Get all known token balances for a wallet across all supported chains.',
     parameters: WalletBalanceSchema,
@@ -279,14 +290,7 @@ export class TokenTool {
       );
 
       if (!balances || balances.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `No token balances found for wallet ${params.wallet_address}. This could mean the wallet holds no tokens on the supported chains or there was an issue fetching data.`,
-            },
-          ],
-        };
+        return toolError(`No token balances found for wallet ${params.wallet_address}. This could mean the wallet holds no tokens on the supported chains or there was an issue fetching data.`);
       }
 
       return {
@@ -304,21 +308,19 @@ export class TokenTool {
         `Error in 'get_wallet_balance' for wallet ${params.wallet_address}: ${errorMessage}`,
         error instanceof Error ? error.stack : undefined,
       );
-      return {
-        content: [
-          {
-            isError: true,
-            type: 'text',
-            text: `Error getting wallet balance: ${errorMessage}. Please ensure the wallet address is correct.`,
-          },
-        ],
-      };
+      return toolError(`Error getting wallet balance: ${errorMessage}. Please ensure the wallet address is correct.`);
     }
   }
 
   // --- Token Approval Tool ---
   @Tool({
-    name: 'generate_token_approval_tx', // Renamed from token_approve
+    name: 'generate_token_approval_tx',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Generates the necessary transaction data (like data, to, value) required to approve an ERC20 token for spending by another address (the spender). This is often needed before interacting with DeFi protocols (e.g., supplying liquidity, swapping tokens). Does NOT send the transaction.',
     parameters: TokenApproveSchema,
@@ -326,7 +328,7 @@ export class TokenTool {
   async generateApprovalTransaction(
     inputs: z.infer<typeof TokenApproveSchema>,
     _context: Context,
-  ): Promise<{ content: { type: string; text: string; isError?: boolean }[] }> {
+  ): Promise<{ content: { type: string; text: string }[]; isError?: boolean }> {
     this.logger.log(
       `[generate_token_approval_tx TOOL INPUT] Received amount: ${JSON.stringify(
         inputs.amount,
@@ -350,15 +352,7 @@ export class TokenTool {
         this.logger.error(
           `Internal configuration error: No platform ID mapping found for chain: ${chain}`,
         );
-        return {
-          content: [
-            {
-              isError: true,
-              type: 'text',
-              text: `Error: Internal configuration error - No platform ID mapping for chain: ${chain}. Supported chains: ${Object.keys(chainToPlatformId).join(', ')}.`,
-            },
-          ],
-        };
+        return toolError(`Error: Internal configuration error - No platform ID mapping for chain: ${chain}. Supported chains: ${Object.keys(chainToPlatformId).join(', ')}.`);
       }
 
       // --- Token Resolution ---
@@ -396,15 +390,7 @@ export class TokenTool {
         this.logger.warn(
           `Token lookup failed: ID="${tokenIdentifier}", Chain="${chain}", PlatformID="${platformId}"`,
         );
-        return {
-          content: [
-            {
-              isError: true,
-              type: 'text',
-              text: `Error: Token "${tokenIdentifier}" not found on chain "${chain}". Please verify the token identifier and chain. Common symbols might exist on multiple chains; try using the contract address if the symbol is ambiguous.`,
-            },
-          ],
-        };
+        return toolError(`Error: Token "${tokenIdentifier}" not found on chain "${chain}". Please verify the token identifier and chain. Common symbols might exist on multiple chains; try using the contract address if the symbol is ambiguous.`);
       }
 
       // --- Amount Conversion ---
@@ -451,15 +437,7 @@ export class TokenTool {
         this.logger.error(
           `Failed to parse amount "${amount}" for token ${foundToken.symbol} (using ${finalDecimals} decimals): ${message}`,
         );
-        return {
-          content: [
-            {
-              isError: true,
-              type: 'text',
-              text: `Error: Invalid amount format "${amount}" for token ${foundToken.symbol} (expected ${decimalsStr} decimals). ${message}`,
-            },
-          ],
-        };
+        return toolError(`Error: Invalid amount format "${amount}" for token ${foundToken.symbol} (expected ${decimalsStr} decimals). ${message}`);
       }
 
       const txData =
@@ -484,15 +462,7 @@ export class TokenTool {
         `Error in 'generate_token_approval_tx': ${errorMessage}`,
         error instanceof Error ? error.stack : undefined,
       );
-      return {
-        content: [
-          {
-            isError: true,
-            type: 'text',
-            text: `Error: Failed to generate approval transaction data. ${errorMessage}`,
-          },
-        ],
-      };
+      return toolError(`Error: Failed to generate approval transaction data. ${errorMessage}`);
     }
   }
 }

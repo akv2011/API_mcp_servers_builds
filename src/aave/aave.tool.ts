@@ -22,6 +22,12 @@ export class AaveTool {
 
   @Tool({
     name: 'generate_aave_supply_tx',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Generates the transaction data required to supply assets to an Aave V3 pool. Does NOT send the transaction.',
     parameters: z.object({
@@ -83,6 +89,12 @@ export class AaveTool {
 
   @Tool({
     name: 'generate_aave_withdraw_tx',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Generates the transaction data required to withdraw assets from an Aave V3 pool. Does NOT send the transaction.',
     parameters: z.object({
@@ -144,6 +156,12 @@ export class AaveTool {
 
   @Tool({
     name: 'generate_aave_borrow_tx',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Generates the transaction data required to borrow assets from an Aave V3 pool. Requires sufficient collateral in the pool. Does NOT send the transaction.',
     parameters: z.object({
@@ -205,6 +223,12 @@ export class AaveTool {
 
   @Tool({
     name: 'generate_aave_repay_tx',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description:
       'Generates the transaction data required to repay borrowed assets to an Aave V3 pool. Does NOT send the transaction.',
     parameters: z.object({

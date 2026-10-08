@@ -12,6 +12,12 @@ export class PositionsTool {
 
   @Tool({
     name: 'get_lending_positions',
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     description: `Get user lending positions across all chains or for a specific chain.
 Returns user positions filtered by optional chain and protocol parameters.
 - If chain is specified, returns positions for that chain only
