@@ -27,13 +27,14 @@ export class LoggingInterceptor implements NestInterceptor {
     }
 
     const request = context.switchToHttp().getRequest();
-    const { method, url } = request;
+    // path, not url: the query string can carry ?api_key=, which must not reach the logs.
+    const { method, path } = request;
     const now = Date.now();
 
     return next.handle().pipe(
       tap(() => {
         const delay = Date.now() - now;
-        this.logger.log(`${method} ${url} ${delay}ms`);
+        this.logger.log(`${method} ${path} ${delay}ms`);
       }),
     );
   }

@@ -7,6 +7,7 @@ import { Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { NextFunction, Request, Response } from 'express';
 
 const logger = new Logger('Main');
 
@@ -18,6 +19,19 @@ async function bootstrap() {
   };
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Clients that cannot set headers may pass ?api_key=. Move it into a header before anything
+  // downstream, including library debug logs, sees the URL.
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    const url = new URL(req.url, 'http://localhost');
+    const key = url.searchParams.get('api_key');
+    if (key) {
+      req.headers['x-api-key'] ??= key;
+      url.searchParams.delete('api_key');
+      req.url = url.pathname + url.search;
+    }
+    next();
+  });
   // Serve static files from the appropriate path
   // In development, files will be served from src/public
   // In production, files will be served from public (after being copied during build)
