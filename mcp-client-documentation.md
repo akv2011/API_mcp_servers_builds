@@ -2,515 +2,210 @@
 
 ## Overview
 
-The Model Context Protocol (MCP) provides a unified API for interacting with various DeFi protocols across multiple blockchains. This documentation will help you integrate with our MCP server to access DeFi functionality through a standardized interface.
+This MCP server exposes DeFi data and unsigned transaction builders across Aave V3, Morpho, Hyperliquid and several EVM chains as MCP tools. Every tool is read-only: the `generate_*` tools return transaction data for the user's wallet to sign and never send anything.
 
 ## Getting Started
 
-### API Access
+### Access
 
-To access the MCP API, you will need:
-- An API key (contact the Matrix team to obtain one)
-- The MCP server endpoint URL
-
-### Client Installation
-
-```bash
-# Using npm
-npm install @rekog/mcp-client
-
-# Using yarn
-yarn add @rekog/mcp-client
-
-# Using pnpm
-pnpm add @rekog/mcp-client
-```
+You need:
+- The server URL, for example `http://localhost:3000/mcp` (Streamable HTTP; legacy SSE is at `/sse`)
+- An API key, sent as `Authorization: Bearer <key>`. Locally that is the `MCP_API_KEY` you started the server with; in a hosted setup it is a key from the `api_keys` table.
 
 ### Basic Usage
 
+With the official TypeScript SDK (`npm install @modelcontextprotocol/sdk`):
+
 ```typescript
-import { McpClient } from '@rekog/mcp-client';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
-// Initialize the client
-const mcpClient = new McpClient({
-  url: 'https://api.matrix.example/mcp',
-  apiKey: 'your-api-key',
+const transport = new StreamableHTTPClientTransport(new URL('http://localhost:3000/mcp'), {
+  requestInit: { headers: { Authorization: `Bearer ${process.env.MCP_API_KEY}` } },
 });
+const client = new Client({ name: 'example', version: '1.0.0' });
+await client.connect(transport);
 
-// Call a tool
-const result = await mcpClient.call('get_token_info', {
-  query: 'ETH',
-});
-
-// Parse the response
-const data = JSON.parse(result.content[0].text);
-console.log(data);
+const result = await client.callTool({ name: 'get_token_info', arguments: { query: 'ETH' } });
+if (result.isError) throw new Error(result.content[0].text);
+console.log(JSON.parse(result.content[0].text));
 ```
+
+Failed calls set `isError: true` on the result, so check it before parsing.
 
 ## Available Tools
 
-### Positions
+Generated from the server's `tools/list`. Every tool carries `readOnlyHint: true`; `generate_*` tools return unsigned transaction data.
 
-#### get_lending_positions
+### generate_aave_borrow_tx
 
-Get user lending positions across all supported protocols and chains.
+Generates the transaction data required to borrow assets from an Aave V3 pool. Requires sufficient collateral in the pool. Does NOT send the transaction.
 
-```typescript
-// Example
-const positions = await mcpClient.call('get_lending_positions', {
-  address: '0x1234...', // Required: User's Ethereum address
-  protocol: 'aave',     // Optional: Filter by protocol
-  chain: 'mainnet'      // Optional: Filter by chain
-});
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `mainnet-etherfi` \| `mainnet-lido` \| `arbitrum` \| `optimism` \| `base` … | yes | The chain to borrow the token from |
+| `asset` | string | yes | The token symbol to borrow (e.g., WETH, USDC) |
+| `amount` | number | yes | The amount of tokens to borrow |
+| `on_behalf_of` | string | yes | The address to borrow the tokens on behalf of |
 
-const data = JSON.parse(positions.content[0].text);
-```
+### generate_aave_repay_tx
 
-Response contains:
-- Supply and borrow positions
-- Health factors
-- APY rates
-- Asset values
+Generates the transaction data required to repay borrowed assets to an Aave V3 pool. Does NOT send the transaction.
 
-#### get_hyperliquid_positions
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `mainnet-etherfi` \| `mainnet-lido` \| `arbitrum` \| `optimism` \| `base` … | yes | The chain to repay the token to |
+| `asset` | string | yes | The token symbol to repay (e.g., WETH, USDC) |
+| `amount` | number | yes | The amount of tokens to repay |
+| `on_behalf_of` | string | yes | The address to repay the tokens on behalf of |
 
-Get perpetual trading positions on Hyperliquid.
+### generate_aave_supply_tx
 
-```typescript
-const positions = await mcpClient.call('get_hyperliquid_positions', {
-  address: '0x1234...' // Required: User's Ethereum address
-});
+Generates the transaction data required to supply assets to an Aave V3 pool. Does NOT send the transaction.
 
-const data = JSON.parse(positions.content[0].text);
-```
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `mainnet-etherfi` \| `mainnet-lido` \| `arbitrum` \| `optimism` \| `base` … | yes | The chain to supply the token to |
+| `asset` | string | yes | The token symbol to supply (e.g., WETH, USDC) |
+| `amount` | number | yes | The amount of tokens to supply |
+| `on_behalf_of` | string | yes | The address to supply the tokens on behalf of |
 
-### Markets
+### generate_aave_withdraw_tx
 
-#### get_lending_markets
+Generates the transaction data required to withdraw assets from an Aave V3 pool. Does NOT send the transaction.
 
-Get lending market information with optional filtering.
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `mainnet-etherfi` \| `mainnet-lido` \| `arbitrum` \| `optimism` \| `base` … | yes | The chain to withdraw the token from |
+| `asset` | string | yes | The token symbol to withdraw (e.g., WETH, USDC) |
+| `amount` | number | yes | The amount of tokens to withdraw |
+| `on_behalf_of` | string | yes | The address to withdraw the tokens to |
 
-```typescript
-const markets = await mcpClient.call('get_lending_markets', {
-  chain: 'mainnet',               // Optional: Filter by chain
-  protocol: 'aave',               // Optional: Filter by protocol
-  collateralTokenSymbol: 'ETH',   // Optional: Filter by collateral token
-  borrowTokenSymbol: 'USDC'       // Optional: Filter by borrow token
-});
+### generate_morpho_borrow_tx
 
-const data = JSON.parse(markets.content[0].text);
-```
+Borrow assets from Morpho Blue by supplying collateral. Returns unsigned transaction data for the wallet to sign; nothing is sent.
 
-### AAVE Operations
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `base` | yes | The blockchain network to use |
+| `supply_asset` | string | yes | The token symbol to supply as collateral (e.g., "WETH", "wstETH") |
+| `supply_amount` | number | yes | The amount of collateral to supply |
+| `borrow_asset` | string | yes | The token symbol to borrow (e.g., "USDC", "DAI") |
+| `borrow_amount` | number | yes | The amount to borrow |
+| `user_address` | string | yes | The user address to borrow on behalf of |
 
-#### aave_supply
+### generate_morpho_vault_deposit_tx
 
-Supply assets to Aave protocol.
+Deposit assets into a Morpho Earn Vault. Returns unsigned transaction data for the wallet to sign; nothing is sent.
 
-```typescript
-const result = await mcpClient.call('aave_supply', {
-  chain: 'mainnet',         // Required: Chain to interact with
-  asset: 'ETH',             // Required: Asset symbol to supply
-  amount: 1.0,              // Required: Amount to supply
-  on_behalf_of: '0x1234...' // Required: Address to supply on behalf of
-});
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `base` | yes | The blockchain network |
+| `asset_symbol` | string | yes | The asset symbol to deposit (e.g., "WETH", "USDC") |
+| `amount` | number | yes | The amount to deposit |
+| `user_address` | string | yes | The user address to deposit on behalf of |
+| `vault_identifier` | string | no | Optional: Vault address or descriptive name |
 
-const data = JSON.parse(result.content[0].text);
-```
+### generate_morpho_vault_withdraw_tx
 
-#### aave_withdraw
+Withdraw assets from a Morpho Earn Vault. Returns unsigned transaction data for the wallet to sign; nothing is sent.
 
-Withdraw assets from Aave protocol.
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `mainnet` \| `base` | yes | The blockchain network |
+| `asset_symbol` | string | yes | The asset symbol to withdraw (e.g., "WETH", "USDC") |
+| `amount` | number | yes | The amount of shares to withdraw |
+| `user_address` | string | yes | The user address to withdraw on behalf of |
+| `vault_identifier` | string | no | Optional: Vault address or descriptive name |
 
-```typescript
-const result = await mcpClient.call('aave_withdraw', {
-  chain: 'mainnet',         // Required: Chain to interact with
-  asset: 'ETH',             // Required: Asset symbol to withdraw
-  amount: 1.0,              // Required: Amount to withdraw
-  on_behalf_of: '0x1234...' // Required: Address to withdraw on behalf of
-});
+### generate_token_approval_tx
 
-const data = JSON.parse(result.content[0].text);
-```
+Generates the necessary transaction data (like data, to, value) required to approve an ERC20 token for spending by another address (the spender). This is often needed before interacting with DeFi protocols (e.g., supplying liquidity, swapping tokens). Does NOT send the transaction.
 
-#### aave_borrow
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `base` \| `mode` \| `mainnet` \| `mainnet-gho` \| `mainnet-etherfi` \| `mainnet-lido` … | yes | The chain where the token exists (e.g., optimism, base) |
+| `owner` | string | yes | The address of the token owner initiating the approval |
+| `tokenIdentifier` | string | yes | The symbol or contract address of the token to approve (e.g., USDC) |
+| `spender` | string | yes | The address of the contract/wallet to grant approval to |
+| `amount` | string | yes | The human-readable amount to approve (e.g., '100.5') |
 
-Borrow assets from Aave protocol.
+### get_hyperliquid_open_orders
 
-```typescript
-const result = await mcpClient.call('aave_borrow', {
-  chain: 'mainnet',         // Required: Chain to interact with
-  asset: 'USDC',            // Required: Asset symbol to borrow
-  amount: 1000,             // Required: Amount to borrow
-  on_behalf_of: '0x1234...' // Required: Address to borrow on behalf of
-});
+Get open orders for a user on Hyperliquid
 
-const data = JSON.parse(result.content[0].text);
-```
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `user` | string | yes | User wallet address to fetch open orders for |
 
-#### aave_repay
+### get_hyperliquid_positions
 
-Repay borrowed assets to Aave protocol.
-
-```typescript
-const result = await mcpClient.call('aave_repay', {
-  chain: 'mainnet',         // Required: Chain to interact with
-  asset: 'USDC',            // Required: Asset symbol to repay
-  amount: 1000,             // Required: Amount to repay
-  on_behalf_of: '0x1234...' // Required: Address to repay on behalf of
-});
-
-const data = JSON.parse(result.content[0].text);
-```
-
-### Morpho Operations
-
-#### morpho_borrow
-
-Borrow assets from Morpho protocol with leverage.
-
-```typescript
-const result = await mcpClient.call('morpho_borrow', {
-  chain: 'mainnet',          // Required: Chain to interact with
-  supply_asset: 'ETH',       // Required: Asset to supply as collateral
-  supply_amount: 1.0,        // Required: Amount of collateral to supply
-  borrow_asset: 'USDC',      // Required: Asset to borrow
-  borrow_amount: 1000,       // Required: Amount to borrow
-  user_address: '0x1234...'  // Required: Address to borrow on behalf of
-});
-
-const data = JSON.parse(result.content[0].text);
-```
-
-#### morpho_vault_deposit
-
-Deposit assets into a Morpho Earn vault to earn yield.
-
-```typescript
-const result = await mcpClient.call('morpho_vault_deposit', {
-  chain: 'mainnet',             // Required: Chain to interact with ('mainnet' or 'base')
-  asset_symbol: 'USDC',         // Required: Asset symbol to deposit
-  amount: 1000,                 // Required: Amount to deposit
-  user_address: '0x1234...',    // Required: Address to deposit on behalf of
-  vault_identifier: 'Aave'      // Optional: Vault name or address (if omitted, a default vault for the asset will be used)
-});
-
-const data = JSON.parse(result.content[0].text);
-```
-
-Response includes:
-- Transaction data for the deposit
-- Any required approval transactions
-- Simulation details showing expected outcome
-- Vault information including APY and curator details
-
-#### morpho_vault_withdraw
-
-Withdraw assets from a Morpho Earn vault.
-
-```typescript
-const result = await mcpClient.call('morpho_vault_withdraw', {
-  chain: 'mainnet',             // Required: Chain to interact with ('mainnet' or 'base')
-  asset_symbol: 'USDC',         // Required: Asset symbol to withdraw
-  amount: 500,                  // Required: Amount of shares to withdraw (use -1 for max)
-  user_address: '0x1234...',    // Required: Address to withdraw on behalf of
-  vault_identifier: 'Aave'      // Optional: Vault name or address (if omitted, will try to find a vault where user has deposits)
-});
-
-const data = JSON.parse(result.content[0].text);
-```
-
-Response includes:
-- Transaction data for the withdrawal
-- Simulation details showing expected outcome
-- Information about the withdrawn amount and associated vault
-
-### Yield Opportunities
-
-#### get_yield_opportunities
-
-Get aggregated yield opportunities across multiple protocols, sorted by APY.
-
-```typescript
-const result = await mcpClient.call('get_yield_opportunities', {
-  chain: 'mainnet',          // Optional: Filter by chain (e.g., 'mainnet', 'base')
-  asset: 'USDC',             // Optional: Filter by asset symbol
-  protocol: 'morpho',        // Optional: Filter by protocol ('aave' or 'morpho')
-  min_apy: 3.5,              // Optional: Minimum APY percentage
-  limit: 10                  // Optional: Limit number of results (omit to get all)
-});
-
-const data = JSON.parse(result.content[0].text);
-```
-
-Response format:
-```json
-{
-  "opportunities": [
-    {
-      "protocol": "morpho",
-      "chain": "mainnet",
-      "assetSymbol": "USDC",
-      "assetAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-      "apy": "4.82",
-      "baseApy": "4.12",
-      "tvlUsd": "15230450.25",
-      "availableLiquidityUsd": "1250000.00",
-      "totalDepositsUnits": "15236428.12",
-      "name": "USDC Vault (Morpho Labs)",
-      "yieldType": "Vault Deposit",
-      "rewards": [
-        {
-          "apy": "0.70", 
-          "symbol": "MORPHO", 
-          "address": "0x9994e35db50125e0df82e4c2dde62496ce330999"
-        }
-      ],
-      "vaultAddress": "0x37f4a4c22784a83c6c9822cc4d53a5c762e1aff5"
-    },
-    {
-      "protocol": "aave",
-      "chain": "mainnet",
-      "assetSymbol": "USDC",
-      "assetAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-      "apy": "3.95",
-      "tvlUsd": "182650300.75",
-      "name": "USDC",
-      "yieldType": "Supply"
-    }
-    // Additional opportunities...
-  ]
-}
-```
-
-The response provides a comprehensive view of yield opportunities with:
-- Base APY (yield from lending/supplying)
-- Additional rewards and incentives (if any)
-- TVL and available liquidity information
-- Protocol-specific details like vault addresses for Morpho
-
-### Token Information
-
-#### get_token_info
-
-Get detailed information about a token by name or symbol.
-
-```typescript
-const tokenInfo = await mcpClient.call('get_token_info', {
-  query: 'ETH' // Required: Token symbol or name to search for
-});
-
-const data = JSON.parse(tokenInfo.content[0].text);
-```
-
-## Error Handling
-
-All MCP tools follow a standardized error format:
-
-```typescript
-try {
-  const result = await mcpClient.call('get_token_info', { query: 'INVALID' });
-  
-  // Check if the response contains an error
-  const content = result.content[0];
-  if (content.isError) {
-    console.error('Error:', content.text);
-    return;
-  }
-  
-  // Process successful response
-  const data = JSON.parse(content.text);
-  console.log('Success:', data);
-} catch (error) {
-  console.error('Network error:', error);
-}
-```
-
-## Best Practices
-
-### Authentication
-
-Store your API key securely:
-- For server-side applications, use environment variables
-- For client-side applications, use a backend proxy
-
-```typescript
-// Using environment variables
-const mcpClient = new McpClient({
-  url: process.env.MCP_URL,
-  apiKey: process.env.MCP_API_KEY,
-});
-```
-
-### Rate Limiting
-
-The MCP server implements rate limiting. Handle rate limit errors gracefully:
-
-```typescript
-try {
-  const result = await mcpClient.call('get_token_info', { query: 'ETH' });
-  // Process result
-} catch (error) {
-  if (error.response?.status === 429) {
-    // Rate limit exceeded
-    const retryAfter = parseInt(error.response.headers['retry-after'] || '60', 10);
-    console.log(`Rate limit exceeded. Retry after ${retryAfter} seconds.`);
-  } else {
-    console.error('Request failed:', error);
-  }
-}
-```
-
-### Caching
-
-For better performance, implement caching for read-only operations:
-
-```typescript
-// Simple in-memory cache example
-const cache = new Map();
-const CACHE_TTL = 60000; // 1 minute in milliseconds
-
-async function getTokenInfo(symbol) {
-  const cacheKey = `token_${symbol}`;
-  
-  // Check cache
-  const cached = cache.get(cacheKey);
-  if (cached && cached.timestamp > Date.now() - CACHE_TTL) {
-    return cached.data;
-  }
-  
-  // Call MCP
-  const result = await mcpClient.call('get_token_info', { query: symbol });
-  
-  // Parse and cache result
-  const data = JSON.parse(result.content[0].text);
-  cache.set(cacheKey, { data, timestamp: Date.now() });
-  
-  return data;
-}
-```
-
-### Connection Reuse
-
-Create a single client instance and reuse it for multiple calls:
-
-```typescript
-// Good practice
-const mcpClient = new McpClient({
-  url: 'https://api.matrix.example/mcp',
-  apiKey: 'your-api-key',
-});
-
-async function getTokenInfo(symbol) {
-  return mcpClient.call('get_token_info', { query: symbol });
-}
-
-async function getUserPositions(address) {
-  return mcpClient.call('get_lending_positions', { address });
-}
-```
-
-## Real-World Integration Examples
-
-### React Application Example
-
-```tsx
-import React, { useEffect, useState } from 'react';
-import { McpClient } from '@rekog/mcp-client';
-
-// Create client (ideally in a separate service/context)
-const client = new McpClient({
-  url: process.env.REACT_APP_MCP_URL,
-  apiKey: process.env.REACT_APP_MCP_API_KEY,
-});
-
-function PositionsComponent({ address }) {
-  const [positions, setPositions] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchPositions() {
-      try {
-        setLoading(true);
-        const result = await client.call('get_lending_positions', { address });
-        
-        const content = result.content[0];
-        if (content.isError) {
-          setError(content.text);
-          return;
-        }
-        
-        setPositions(JSON.parse(content.text));
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (address) {
-      fetchPositions();
-    }
-  }, [address]);
-
-  if (loading) return <div>Loading positions...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!positions) return <div>No positions found</div>;
-
-  return (
-    <div>
-      <h2>Your Positions</h2>
-      {/* Display positions data */}
-    </div>
-  );
-}
-```
-
-### Express Backend Example
-
-```typescript
-import express from 'express';
-import { McpClient } from '@rekog/mcp-client';
-
-const app = express();
-const client = new McpClient({
-  url: process.env.MCP_URL,
-  apiKey: process.env.MCP_API_KEY,
-});
-
-// API endpoint to get markets
-app.get('/api/markets', async (req, res) => {
-  try {
-    const { chain, protocol, asset } = req.query;
-    
-    const result = await client.call('get_lending_markets', {
-      chain: chain as string,
-      protocol: protocol as string,
-      collateralTokenSymbol: asset as string,
-    });
-    
-    const content = result.content[0];
-    if (content.isError) {
-      return res.status(400).json({ error: content.text });
-    }
-    
-    return res.json(JSON.parse(content.text));
-  } catch (error) {
-    return res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    });
-  }
-});
-
-// Start server
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
-```
-
-## Support
-
-If you encounter any issues or have questions about integrating with the MCP server, please contact our support team at support@.
+Retrieves the full clearinghouse state (positions and margin) for a given address on Hyperliquid
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | yes | Ethereum address to fetch positions for |
+
+### get_lending_markets
+
+Get all lending markets with optional filtering by chain, protocol, and token symbols
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | `base` \| `mode` \| `mainnet` \| `mainnet-gho` \| `mainnet-etherfi` \| `mainnet-lido` … | no | Filter by chain |
+| `protocol` | `morpho` \| `aave` | no | Filter by protocol |
+| `asset` | string | no | Token symbol to search for |
+| `limit` | number | no | Limit the number of results |
+| `sort_by` | `supply_apy` \| `borrow_apy` | no | Sort results by APY |
+
+### get_lending_positions
+
+Get user lending positions across all chains or for a specific chain. Returns user positions filtered by optional chain and protocol parameters. - If chain is specified, returns positions for that chain only - If protocol is specified, returns positions for that protocol only - If neither is specified, returns all positions across all chains - Empty positions and chains with no positions are filtered out
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `address` | string | yes | Ethereum address to get positions for (e.g. 0x1155b614971f16758C92c4890eD338C9e3ede6b7) |
+| `protocol` | `morpho` \| `aave` | no | Filter positions by protocol |
+| `chain` | `base` \| `mode` \| `mainnet` \| `mainnet-gho` \| `mainnet-etherfi` \| `mainnet-lido` … | no | Filter positions by chain |
+
+### get_token_balances
+
+Get the balances of specific tokens on specific chains for a given wallet address.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `wallet_address` | string | yes | The wallet address to check the balances for |
+| `tokens` | array of object | yes | Array of tokens to check balances for |
+
+### get_token_info
+
+Get token data (like name, symbol, address on different chains, price, market cap) by its symbol, name, or a specific contract address (case insensitive).
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `query` | string | yes | Token symbol, name, or contract address to search for |
+| `type` | `symbol` \| `name` \| `address` | no | Type of search to perform. Options are "symbol", "name", or "address". If not provided, will auto-detect based on query |
+| `historical_days` | integer | no | Number of past days to fetch historical price data for (e.g., 7, 30) |
+
+### get_wallet_balance
+
+Get all known token balances for a wallet across all supported chains.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `wallet_address` | string | yes | The wallet address to check balances for |
+
+### get_yield_opportunities
+
+Get yield opportunities across protocols
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `chain` | string | no | Filter opportunities by blockchain network (e.g., "mainnet", "base") |
+| `asset` | string | no | Filter opportunities by underlying asset symbol (e.g., "USDC") |
+| `protocol` | string | no | Filter opportunities by protocol (aave or morpho) |
+| `min_apy` | number | no | Minimum Annual Percentage Yield (APY) filter |
+| `limit` | number | no | Maximum number of opportunities to return. If not specified, returns all results. |
 
 ## Supported Chains
 

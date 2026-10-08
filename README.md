@@ -1,521 +1,117 @@
-# API & MCP Server Builds
+# DeFi MCP server
 
+A NestJS service that exposes DeFi data and transaction builders as MCP tools: Aave V3, Morpho, Hyperliquid, token data, lending markets, positions and yields across Ethereum mainnet, Base, Arbitrum, Optimism, Sonic and Mode. The same service also serves a REST API with Swagger docs.
 
-  
-  <p align="center">
-    <i>A collection of API servers and MCP (Model Context Protocol) servers for various projects i built and used for vartious integrations.</i>
-  </p>
-  
-  <br/>
-  <a href="#features">Features</a> •
-  <a href="#quickstart">Quickstart</a> <table>
-<tr>
-  <td width="50%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-AAVE-B6509E?style=for-the-badge" /><br/>
-    <b>Liquidity Markets</b><br/>
-    <small>Premier lending platform</small>
-  </td>
-  <td width="50%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B4-MORPHO-5A67D8?style=for-the-badge" /><br/>
-    <b>Yield Optimization</b><br/>
-    <small>Optimized lending through peer-to-peer matching</small>
-  </td>
-</tr>
-</table><img src="https://img.shields.io/badge/T-R-00FF00?style=for-the-badge&labelColor=000000" /> <img src="https://img.shields.io/badge/I-X-00FF00?style=for-the-badge&labelColor=000000" />
+Every tool is read-only. The `generate_*` tools return unsigned transaction data for the user's wallet to sign; the server never holds a private key and never sends a transaction.
 
-<div align="center">
-  <img src="https://img.shields.io/badge/-API%20%26%20MCP%20SERVERS-00FF00?style=for-the-badge&labelColor=000000" alt="API & MCP Servers" />
-  <br/>
-  <img src="https://img.shields.io/badge/version-2.0-brightgreen" alt="Version" /> 
-  <img src="https://img.shields.io/badge/TypeScript-5.8-blue" alt="TypeScript" /> 
-  <img src="https://img.shields.io/badge/NestJS-11.0-red" alt="NestJS" />
-  <br/><br/>
-  
+## Tools
 
+| Tool | What it returns |
+|---|---|
+| `get_lending_positions` | A wallet's lending positions across supported protocols and chains |
+| `get_lending_markets` | Lending markets, filterable by chain, protocol and asset, with sorting |
+| `get_yield_opportunities` | Yield opportunities filtered by asset, chain and protocol |
+| `get_hyperliquid_positions`, `get_hyperliquid_open_orders` | A Hyperliquid account's positions and open orders |
+| `get_token_info`, `get_token_balances`, `get_wallet_balance` | Token metadata and prices, and wallet balances |
+| `generate_aave_supply_tx`, `_withdraw_tx`, `_borrow_tx`, `_repay_tx` | Unsigned Aave V3 transactions |
+| `generate_morpho_borrow_tx`, `_vault_deposit_tx`, `_vault_withdraw_tx` | Unsigned Morpho transactions |
+| `generate_token_approval_tx` | An unsigned ERC-20 approval with gas limit and EIP-1559 fees |
 
-  <br/>
-  <a href="#features">Features</a> •
-  <a href="#quickstart">Quickstart</a> •
-  <a href="#endpoints">Endpoints</a> •
-  <a href="#tech">Tech Stack</a> •
-  <a href="#security">Security</a> •
-  <a href="#deployment">Deployment</a>
-  <br/><br/>
-</div>
+`mcp-client-documentation.md` has every tool's parameters, generated from the server's own `tools/list`.
 
-<br/>
+## Security
 
-> A collection of API servers and MCP (Model Context Protocol) servers built with TypeScript, NestJS, and modern web technologies. This repository contains various API implementations for different projects and integrations.
+| Concern | How it is handled |
+|---|---|
+| Who can call | Every route, including `/mcp` and `/sse`, needs an API key: `Authorization: Bearer <key>` (preferred), `x-api-key`, or `?api_key=` for clients that cannot set headers |
+| Key checks | Hosted keys are looked up in the `api_keys` table; a single local `MCP_API_KEY` is compared in constant time |
+| Secrets in logs | Supabase keys, provider RPC URLs and query-string API keys are never written to logs; a query-string key is moved into a header before any handler or library sees the URL |
+| Funds | No tool signs or sends; all 16 tools carry `readOnlyHint: true` |
+| Failures | Failed tool calls set `isError: true` on the result, so a model can tell an error from data |
 
-<br/>
+## Run locally
 
-
----
-
-## <img src="https://img.shields.io/badge/✨-FEATURES-00FF00?style=for-the-badge&labelColor=000000" alt="Features" />
-
-### 🚀 Core Technologies
-
-<table>
-<tr>
-  <td width="33%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B5-NESTJS-E0234E?style=for-the-badge" /><br/>
-    <b>NestJS Framework</b><br/>
-    <small>Scalable Node.js framework</small>
-  </td>
-  <td width="33%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%94%B7-TYPESCRIPT-3178C6?style=for-the-badge" /><br/>
-    <b>TypeScript</b><br/>
-    <small>Type-safe development</small>
-  </td>
-  <td width="33%" align="center">
-    <img width="80" src="https://img.shields.io/badge/%F0%9F%A4%96-MCP-5A67D8?style=for-the-badge" /><br/>
-    <b>MCP Protocol</b><br/>
-    <small>Model Context Protocol integration</small>
-  </td>
-</tr>
-</table>
-
-### 🛠️ Built-in Features
-
-<div align="center">
-  <table width="100%">
-    <tr>
-      <td align="center" width="5%"><img src="https://img.shields.io/badge/🔐-Security-00FF00" /></td>
-      <td><b>API Key Authentication</b> - Secure access control for all endpoints</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/📊-Swagger-00FF00" /></td>
-      <td><b>API Documentation</b> - Interactive Swagger documentation</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/🐳-Docker-00FF00" /></td>
-      <td><b>Containerization</b> - Docker support for easy deployment</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/🔄-Caching-00FF00" /></td>
-      <td><b>Response Caching</b> - Optimized performance with intelligent caching</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/�-Logging-00FF00" /></td>
-      <td><b>Comprehensive Logging</b> - Detailed request/response logging</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/🧪-Testing-00FF00" /></td>
-      <td><b>E2E Testing</b> - Full test coverage with Jest</td>
-    </tr>
-  </table>
-</div>
-
-### 🌐 Multi-Protocol Support
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/💰-Supply-00FF00" /></td>
-      <td><b>Supply Operations</b> - Supply assets to any supported pool</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/🏦-Withdraw-00FF00" /></td>
-      <td><b>Withdrawal Transactions</b> - Seamless asset withdrawal</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/💸-Borrow-00FF00" /></td>
-      <td><b>Borrowing Mechanisms</b> - Optimized borrowing operations</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/💳-Repay-00FF00" /></td>
-      <td><b>Loan Repayment</b> - Streamlined debt management</td>
-    </tr>
-    <tr>
-      <td align="center"><img src="https://img.shields.io/badge/🔄-Unify-00FF00" /></td>
-      <td><b>Unified Endpoints</b> - Consistent interface across protocols</td>
-    </tr>
-  </table>
-</div>
-
-### 🔒 Enterprise-Grade Security
-
-> <img src="https://img.shields.io/badge/SENTINEL-PROTECTION-00FF00?style=for-the-badge&labelColor=000000" alt="Sentinel Protection" />
-> 
-> - ✅ **Neural-level Input Validation** - Comprehensive validation using class-validator
-> - 🛡️ **Sentinel CORS Protection** - Advanced cross-origin security
-> - 🔐 **Encrypted Environment Variables** - Secure credential management
-> - 📝 **Comprehensive Activity Logs** - Complete audit trail of all actions
-> - 🧠 **Intelligent Error Handling** - Adaptive error management system
-
----
-
-## <img src="https://img.shields.io/badge/🚀-QUICKSTART-00FF00?style=for-the-badge&labelColor=000000" alt="Quickstart" />
-
-> <img src="https://img.shields.io/badge/💊%20THE%20BLUE%20PILL-EXIT%20THE%20MATRIX-0000FF?style=for-the-badge&labelColor=000000" alt="The Blue Pill" />
-> 
-> ```bash
-> # 1. Clone the repository
-> git clone <repository-url>
-> cd matrix-api
-> 
-> # 2. Install dependencies
-> pnpm install
-> 
-> # 3. Configure your environment
-> cp .env.example .env
-> # Edit .env with your credentials
-> 
-> # 4. Start the development server
-> pnpm run start:dev
-> 
-> # 5. Access the API and documentation
-> # Main API: http://localhost:3000
-> # Swagger UI: http://localhost:3000/api-docs
-> ```
-
----
-
-## <img src="https://img.shields.io/badge/🌐-PROTOCOL%20ENDPOINTS-00FF00?style=for-the-badge&labelColor=000000" alt="Protocol Endpoints" />
-
-### <img src="https://img.shields.io/badge/THE%20ONE-UNIFIED%20ENDPOINTS-00FF00?style=flat&labelColor=000000" alt="The One" />
-
-<details open>
-<summary><b>Get All Protocol Positions</b></summary>
-
-```http
-GET /beta/v0/positions/:protocol/:chain/:address
+```sh
+pnpm install
+cp .env.example .env    # set MCP_API_KEY and the RPC URLs for the chains you use
+pnpm build && node dist/main
 ```
 
-<table>
-<tr><td><b>Path Parameters:</b></td><td>
-• <code>protocol</code>: "aave" or "morpho"<br/>
-• <code>chain</code>: The blockchain network<br/>
-• <code>address</code>: The user's wallet address
-</td></tr>
-<tr><td><b>Returns:</b></td><td>
-• Supply and borrow balances<br/>
-• Health factors<br/>
-• APY rates<br/>
-• Liquidation thresholds
-</td></tr>
-</table>
+| Variable | Meaning |
+|---|---|
+| `MCP_API_KEY` | Single API key for local use, when the hosted key store is not configured |
+| `<CHAIN>_RPC_URL` | RPC endpoint per chain, for example `MAINNET_RPC_URL`, `BASE_RPC_URL`, `MAINNET_ETHERFI_RPC_URL`. Without one, the chain's public default is used, which can be slow or rate-limited |
+| `SUPABASE_URL`, `SUPABASE_KEY` | Asset master data, needed by the Aave tools |
+| `UPLINK_SUPABASE_URL`, `UPLINK_SUPABASE_SERVICE_ROLE_KEY` | Hosted API key store |
+| `PORT` | Defaults to 3000 |
 
-<details>
-<summary>Example Response</summary>
+On startup the service fills a token cache from a public token list. Until it finishes, usually under a minute, token lookups can wait on it.
+
+## Connect an MCP client
+
+The server speaks MCP over Streamable HTTP at `/mcp` (legacy SSE at `/sse`). Replace the URL and key with yours.
+
+Claude Code:
+
+```sh
+claude mcp add --transport http defi-mcp http://localhost:3000/mcp -H "Authorization: Bearer $MCP_API_KEY"
+```
+
+Codex CLI (reads the key from an environment variable):
+
+```sh
+codex mcp add defi-mcp --url http://localhost:3000/mcp --bearer-token-env-var MCP_API_KEY
+```
+
+Gemini CLI:
+
+```sh
+gemini mcp add -s user -t http -H "Authorization: Bearer $MCP_API_KEY" defi-mcp http://localhost:3000/mcp
+```
+
+Cursor (`~/.cursor/mcp.json`):
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "positions": [
-      {
-        "pool": "Aave Base WETH",
-        "supplied": {
-          "amount": "1.5",
-          "value": "3200",
-          "apy": "0.8"
-        },
-        "borrowed": {
-          "amount": "1000",
-          "value": "1000",
-          "apy": "3.2"
-        },
-        "healthFactor": "2.1",
-        "liquidationThreshold": "0.825"
-      }
-    ]
+  "mcpServers": {
+    "defi-mcp": {
+      "url": "http://localhost:3000/mcp",
+      "headers": { "Authorization": "Bearer your_key" }
+    }
   }
 }
 ```
-</details>
-</details>
 
-<details>
-<summary><b>Get All Protocol Markets</b></summary>
-
-```http
-GET /beta/v0/markets
-```
-
-<table>
-<tr><td><b>Query Parameters:</b></td><td>
-• <code>protocol</code>: Filter by protocol ("aave", "morpho")<br/>
-• <code>chain</code>: Filter by blockchain network<br/>
-• <code>asset</code>: Filter by asset symbol<br/>
-• <code>liquidityUsd</code>: Minimum liquidity (USD)<br/>
-• <code>supplyApy</code>: Minimum supply APY<br/>
-• <code>borrowApy</code>: Maximum borrow APY<br/>
-• <code>sortBy</code>: Sort parameter<br/>
-• <code>order</code>: Sort direction ("asc" or "desc")
-</td></tr>
-</table>
-</details>
-
-### <img src="https://img.shields.io/badge/AAVE-PROTOCOL-B6509E?style=flat&labelColor=000000" alt="Aave" />
-
-<details>
-<summary><b>Supply Assets</b></summary>
-
-```http
-POST /beta/v0/aave/supply/:chain
-```
-
-<table>
-<tr><td><b>Request Body:</b></td><td>
+VS Code (`.vscode/mcp.json`):
 
 ```json
 {
-  "call_data": {
-    "asset": "WETH",
-    "amount": 1.5,
-    "on_behalf_of": "0x..."
+  "inputs": [{ "type": "promptString", "id": "defi-key", "description": "DeFi MCP API key", "password": true }],
+  "servers": {
+    "defi-mcp": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp",
+      "headers": { "Authorization": "Bearer ${input:defi-key}" }
+    }
   }
 }
 ```
-</td></tr>
-</table>
-</details>
 
-<details>
-<summary><b>Withdraw Assets</b></summary>
+MCP Inspector:
 
-```http
-POST /beta/v0/aave/withdraw/:chain
+```sh
+npx @modelcontextprotocol/inspector --cli http://localhost:3000/mcp --transport http --header "Authorization: Bearer $MCP_API_KEY" --method tools/list
 ```
 
-<table>
-<tr><td><b>Request Body:</b></td><td>
+From code, see the TypeScript SDK example at the top of `mcp-client-documentation.md`.
 
-```json
-{
-  "call_data": {
-    "asset": "WETH",
-    "amount": 1.0,
-    "on_behalf_of": "0x..."
-  }
-}
-```
-</td></tr>
-</table>
-</details>
+Checked on 2026-10-08: Claude Code 2.1.294 connects; MCP Inspector lists all 16 tools and runs live calls (Hyperliquid positions, a mainnet USDC approval priced at 0.71 gwei with a 56,361 gas limit); the TypeScript SDK client example connects and calls a tool; Codex CLI 0.156.1 and Gemini CLI 0.63.0 accept the config. Requests without a key, or with a wrong one, get 401.
 
-<details>
-<summary><b>Borrow Assets</b></summary>
+## Known limits
 
-```http
-POST /beta/v0/aave/borrow/:chain
-```
+- It runs on `@rekog/mcp-nest` 1.6, which negotiates MCP 2025-06-18. mcp-nest 2.x targets the current spec but replaces `McpModule` with a microservice transport strategy, so moving to it means porting each tool class to `@McpController`.
+- Hosted API keys are stored and compared in plaintext. Storing a SHA-256 of each key instead needs a migration of the `api_keys` table.
 
-<table>
-<tr><td><b>Request Body:</b></td><td>
+## License
 
-```json
-{
-  "call_data": {
-    "asset": "WETH",
-    "amount": 0.5,
-    "on_behalf_of": "0x..."
-  }
-}
-```
-</td></tr>
-</table>
-</details>
-
-<details>
-<summary><b>Repay Loan</b></summary>
-
-```http
-POST /beta/v0/aave/repay/:chain
-```
-
-<table>
-<tr><td><b>Request Body:</b></td><td>
-
-```json
-{
-  "call_data": {
-    "asset": "WETH",
-    "amount": 0.5,
-    "on_behalf_of": "0x..."
-  }
-}
-```
-</td></tr>
-</table>
-</details>
-
-### <img src="https://img.shields.io/badge/MORPHO-PROTOCOL-5A67D8?style=flat&labelColor=000000" alt="Morpho" />
-
-<details>
-<summary><b>Bundled Supply and Borrow</b></summary>
-
-```http
-POST /beta/v0/morpho/borrow
-```
-
-<table>
-<tr><td><b>Request Body:</b></td><td>
-
-```json
-{
-  "call_data": {
-    "chain": "mainnet",
-    "marketId": "0x...",
-    "collateralToken": "WETH",
-    "borrowToken": "USDC",
-    "collateralAmount": 1.0,
-    "borrowAmount": 1000,
-    "sender": "0x..."
-  }
-}
-```
-</td></tr>
-<tr><td><b>Returns:</b></td><td>Transaction data for execution</td></tr>
-</table>
-</details>
-
----
-
-## <img src="https://img.shields.io/badge/🔋-TECH%20STACK-00FF00?style=for-the-badge&labelColor=000000" alt="Tech Stack" />
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /><br>
-        <b>TypeScript</b><br>
-        <small>Enhanced type safety</small>
-      </td>
-      <td align="center">
-        <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS" /><br>
-        <b>NestJS</b><br>
-        <small>Robust framework</small>
-      </td>
-      <td align="center">
-        <img src="https://img.shields.io/badge/Viem-646CFF?style=for-the-badge&logo=ethereum&logoColor=white" alt="Viem" /><br>
-        <b>Viem</b><br>
-        <small>Ethereum interaction</small>
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /><br>
-        <b>Supabase</b><br>
-        <small>Data management</small>
-      </td>
-      <td align="center">
-        <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" /><br>
-        <b>Swagger</b><br>
-        <small>API documentation</small>
-      </td>
-      <td align="center">
-        <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" /><br>
-        <b>Jest</b><br>
-        <small>Testing framework</small>
-      </td>
-    </tr>
-  </table>
-</div>
-
----
-
-## <img src="https://img.shields.io/badge/🛡️-SECURITY%20MEASURES-00FF00?style=for-the-badge&labelColor=000000" alt="Security Measures" />
-
-<div align="center">
-  <img src="https://img.shields.io/badge/SENTINEL%20PROTECTION%20SYSTEM-00FF00?style=for-the-badge&labelColor=000000" alt="Sentinel Protection System" />
-</div>
-
-<br/>
-
-<table>
-  <tr>
-    <td width="10%" align="center"><img src="https://img.shields.io/badge/✅-VALID-00FF00" /></td>
-    <td><b>Advanced Input Validation</b> - Class-validator ensures all inputs match expected patterns</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="https://img.shields.io/badge/🔍-MONITOR-00FF00" /></td>
-    <td><b>Request Monitoring</b> - Every request is logged and analyzed for anomalies</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="https://img.shields.io/badge/🔐-SECURE-00FF00" /></td>
-    <td><b>Environment Protection</b> - Sensitive data is encrypted and secured</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="https://img.shields.io/badge/🧠-ERROR-00FF00" /></td>
-    <td><b>Multi-layered Error Handling</b> - Controlled error exposure prevents data leakage</td>
-  </tr>
-  <tr>
-    <td align="center"><img src="https://img.shields.io/badge/🛡️-CORS-00FF00" /></td>
-    <td><b>Secure CORS Configuration</b> - Prevents unauthorized cross-origin requests</td>
-  </tr>
-</table>
-
----
-
-## <img src="https://img.shields.io/badge/🌐-DEPLOYMENT-00FF00?style=for-the-badge&labelColor=000000" alt="Deployment" />
-
-### Docker Deployment
-
-```bash
-# Build the Docker image
-docker build -t matrix-api .
-
-# Run the container
-docker run -p 3000:3000 matrix-api
-```
-
-### Environment Configuration
-
-```bash
-docker run -p 3000:3000 \
-  -e SUPABASE_URL=your_url \
-  -e SUPABASE_KEY=your_key \
-  matrix-api
-```
-
----
-
-## <img src="https://img.shields.io/badge/🔍-TROUBLESHOOTING-00FF00?style=for-the-badge&labelColor=000000" alt="Troubleshooting" />
-
-<table>
-  <tr>
-    <th align="center"><img src="https://img.shields.io/badge/ISSUE-SOLUTION-000000?style=for-the-badge&labelColor=00FF00" /></th>
-  </tr>
-  <tr>
-    <td><b>Connection Refused</b></td>
-    <td>Check your RPC endpoint configurations in the environment settings</td>
-  </tr>
-  <tr>
-    <td><b>Invalid Address Format</b></td>
-    <td>Ensure addresses include the '0x' prefix and are valid for the chain</td>
-  </tr>
-  <tr>
-    <td><b>Missing Dependency</b></td>
-    <td>Run <code>pnpm install</code> to update all dependencies</td>
-  </tr>
-  <tr>
-    <td><b>Chain ID Mismatch</b></td>
-    <td>Verify you're using the correct chain identifiers</td>
-  </tr>
-</table>
-
----
-
-## <img src="https://img.shields.io/badge/🔗-RELATED%20LINKS-00FF00?style=for-the-badge&labelColor=000000" alt="Related Links" />
-
-<div align="center">
-  <a href="https://docs.aave.com/" target="_blank"><img src="https://img.shields.io/badge/Aave_Docs-B6509E?style=for-the-badge&logo=aave&logoColor=white" alt="Aave Docs" /></a>
-  <a href="https://docs.morpho.xyz/" target="_blank"><img src="https://img.shields.io/badge/Morpho_Docs-5A67D8?style=for-the-badge" alt="Morpho Docs" /></a>
-  <a href="https://ethereum.org/" target="_blank"><img src="https://img.shields.io/badge/Ethereum-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white" alt="Ethereum" /></a>
-  <a href="https://base.org/" target="_blank"><img src="https://img.shields.io/badge/Base-0052FF?style=for-the-badge" alt="Base" /></a>
-  <a href="https://optimism.io/" target="_blank"><img src="https://img.shields.io/badge/Optimism-FF0420?style=for-the-badge" alt="Optimism" /></a>
-  <a href="https://arbitrum.io/" target="_blank"><img src="https://img.shields.io/badge/Arbitrum-12AAFF?style=for-the-badge" alt="Arbitrum" /></a>
-</div>
-
----
-
-<div align="center">
-  <img src="https://img.shields.io/badge/⚡%20POWERED%20BY%20THE%20MATRIX-00FF00?style=for-the-badge&labelColor=000000" alt="Powered by the Matrix" />
-  
-  <br/><br/>
-  
-  <p><b>There is no spoon. Only DeFi protocols.</b></p>
-  
-  <br/>
-  
-```
+MIT, see `LICENSE`.
